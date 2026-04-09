@@ -1,0 +1,2014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wolf">
+<meta name="theme-color" content="#0e0e0e">
+<title>Wolf — Golf Wagering Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #181818;
+    --surface2: #222222;
+    --border: #2e2e2e;
+    --gold: #c9a84c;
+    --gold-dim: #7a6330;
+    --red: #c0392b;
+    --green: #27ae60;
+    --text: #f0ece4;
+    --muted: #888;
+    --wolf-color: #c9a84c;
+    --partner-color: #3a8f5e;
+    --opponent-color: #555;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.5;
+    padding-top: env(safe-area-inset-top);
+  }
+  h1, h2, h3, .display { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.04em; }
+  .mono { font-family: 'DM Mono', monospace; }
+
+  /* Layout */
+  .screen { display: none; max-width: 600px; margin: 0 auto; padding: 1.5rem 1rem 6rem; }
+  .screen.active { display: block; }
+
+  /* Header */
+  .app-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+  }
+  .wolf-icon {
+    width: 36px; height: 36px;
+    background: var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .app-title { font-size: 28px; color: var(--gold); line-height: 1; }
+  .app-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* Section label */
+  .section-label {
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 10px; margin-top: 1.5rem;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 12px;
+  }
+
+  /* Inputs */
+  input[type=text], input[type=number], select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    padding: 8px 12px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, select:focus { border-color: var(--gold-dim); }
+  select option { background: var(--surface2); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .btn-primary {
+    background: var(--gold);
+    color: #111;
+    border-color: var(--gold);
+    font-weight: 500;
+  }
+  .btn-primary:hover { background: #d4b060; color: #111; border-color: #d4b060; }
+  .btn-sm { padding: 6px 14px; font-size: 13px; }
+  .btn-full { width: 100%; }
+  .btn-danger { border-color: var(--red); color: var(--red); }
+  .btn-danger:hover { background: var(--red); color: #fff; }
+  .btn-success { border-color: var(--green); color: var(--green); }
+  .btn-success:hover { background: var(--green); color: #fff; }
+
+  /* Player name inputs */
+  .player-inputs { display: flex; flex-direction: column; gap: 10px; }
+  .player-row { display: flex; align-items: center; gap: 10px; }
+  .player-num {
+    width: 28px; height: 28px; min-width: 28px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #111;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Config table */
+  .config-table { width: 100%; border-collapse: collapse; }
+  .config-table th {
+    font-size: 11px; color: var(--muted); font-weight: 400;
+    text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .config-table td { padding: 8px; vertical-align: middle; }
+  .config-table tr + tr td { border-top: 1px solid var(--border); }
+  .config-table input { width: 80px; text-align: center; padding: 5px 8px; }
+  .config-table .label-cell { color: var(--text); font-size: 14px; }
+
+  /* Hole screen */
+  .hole-banner {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 12px;
+  }
+  .hole-num-display { font-size: 52px; color: var(--gold); line-height: 1; }
+  .hole-info { text-align: right; }
+  .hole-info-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .hole-info-val { font-size: 16px; font-weight: 500; margin-top: 2px; }
+  .hole-points-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--gold-dim);
+    color: var(--gold);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 12px; font-weight: 500;
+    margin-top: 6px;
+  }
+  .carryover-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #2a1f0a;
+    color: #e8a020;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 12px; font-weight: 500;
+    margin-top: 6px; margin-left: 6px;
+  }
+
+  /* Player cards in hole screen */
+  .tee-order-list { display: flex; flex-direction: column; gap: 8px; }
+  .tee-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 12px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .tee-card.is-wolf { border-color: var(--wolf-color); background: #1e1800; }
+  .tee-card.is-partner { border-color: var(--partner-color); background: #0d1a12; }
+  .tee-card.is-opponent { opacity: 0.7; }
+  .tee-num {
+    width: 28px; height: 28px; min-width: 28px;
+    border-radius: 50%; border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-family: 'DM Mono', monospace;
+    color: var(--muted);
+  }
+  .tee-card.is-wolf .tee-num { border-color: var(--wolf-color); color: var(--wolf-color); }
+  .tee-card.is-partner .tee-num { border-color: var(--partner-color); color: var(--partner-color); }
+  .tee-name { flex: 1; font-weight: 500; }
+  .tee-standing {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .role-badge {
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 20px; font-weight: 500;
+  }
+  .role-wolf { background: #2a2000; color: var(--gold); border: 1px solid var(--gold-dim); }
+  .role-partner { background: #0d1a12; color: #3db370; border: 1px solid #235c38; }
+  .role-pick { background: transparent; color: var(--muted); border: 1px dashed var(--border); cursor: pointer; transition: all 0.15s; }
+  .role-pick:hover { border-color: var(--partner-color); color: #3db370; }
+  .score-input-wrap { display: flex; align-items: center; gap: 8px; }
+  .score-input { width: 52px; text-align: center; padding: 5px 4px; }
+
+  /* Mode picker */
+  .mode-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .mode-btn {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .mode-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .mode-btn.active { background: var(--gold); color: #111; border-color: var(--gold); font-weight: 500; }
+
+  /* Scoreboard */
+  .score-table { width: 100%; border-collapse: collapse; }
+  .score-table th {
+    font-size: 11px; color: var(--muted); font-weight: 400;
+    padding: 6px 10px; border-bottom: 1px solid var(--border);
+    text-align: right; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .score-table th:first-child { text-align: left; }
+  .score-table td { padding: 10px; border-bottom: 1px solid var(--border); }
+  .score-table td:not(:first-child) {
+    text-align: right;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+  }
+  .score-table tr:last-child td { border-bottom: none; }
+  .positive { color: var(--green); }
+  .negative { color: var(--red); }
+  .player-name-cell { font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .wolf-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--gold); display: inline-block;
+  }
+
+  /* Ledger */
+  .ledger-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .ledger-row:last-child { border-bottom: none; }
+  .ledger-arrow { color: var(--gold); font-size: 16px; }
+  .ledger-amt { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; color: var(--gold); margin-left: auto; }
+
+  /* Result overlay */
+  .result-banner {
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 12px;
+    border: 1px solid;
+  }
+  .result-banner.wolf-wins { background: #1a2e1a; border-color: var(--green); }
+  .result-banner.opponents-win { background: #2e1a1a; border-color: var(--red); }
+  .result-banner.push { background: #1e1e1a; border-color: var(--gold-dim); }
+  .result-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.04em; }
+
+  /* Nav dots */
+  .nav-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: center; gap: 0;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav-item {
+    flex: 1; max-width: 140px;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 10px 8px;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 11px;
+    transition: color 0.15s;
+    border: none; background: transparent;
+  }
+  .nav-item.active { color: var(--gold); }
+  .nav-icon { font-size: 20px; margin-bottom: 2px; }
+
+  /* Utility */
+  .row { display: flex; gap: 10px; align-items: center; }
+  .row-between { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+  .mt-1 { margin-top: 8px; }
+  .mt-2 { margin-top: 16px; }
+  .mt-3 { margin-top: 24px; }
+  .text-muted { color: var(--muted); }
+  .text-gold { color: var(--gold); }
+  .text-sm { font-size: 13px; }
+  .text-xs { font-size: 11px; }
+  .bold { font-weight: 500; }
+  .chip {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    margin-left: 6px;
+  }
+
+  /* Multiplier reference table */
+  .mult-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .mult-table th, .mult-table td { padding: 5px 8px; text-align: center; border: 1px solid var(--border); }
+  .mult-table th { font-size: 11px; color: var(--muted); font-weight: 400; background: var(--surface2); }
+  .mult-table td.highlight { color: var(--gold); font-weight: 500; }
+  .mult-table td.na { color: var(--border); }
+
+  /* Course library */
+  .tee-badge {
+    display: inline-block; padding: 2px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 500; border: 1px solid;
+  }
+  .hcp-grid {
+    display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; margin-top: 8px;
+  }
+  .hcp-cell {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  .hcp-cell label { font-size: 10px; color: var(--muted); }
+  .hcp-cell input {
+    width: 100%; text-align: center; padding: 4px 2px; font-size: 13px;
+  }
+  .hcp-stroke-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--gold-dim); color: var(--gold);
+    font-size: 11px; font-weight: 500; font-family: 'DM Mono', monospace;
+    flex-shrink: 0;
+  }
+  .course-item {
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .course-item:last-child { border-bottom: none; }
+
+  /* Animations */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .screen.active { animation: fadeIn 0.2s ease; }
+</style>
+</head>
+<body>
+
+<!-- ===== SCREEN: SETUP ===== -->
+<div id="screen-setup" class="screen active">
+  <div class="app-header">
+    <div class="wolf-icon">🐺</div>
+    <div>
+      <div class="app-title">Wolf</div>
+      <div class="app-sub">Golf Wagering Tracker</div>
+    </div>
+  </div>
+
+  <!-- Resume saved round banner -->
+  <div id="resume-banner" style="display:none;margin-bottom:12px">
+    <div class="card" style="border-color:var(--gold-dim);background:#1a1600">
+      <div style="font-size:14px;font-weight:500;color:var(--gold);margin-bottom:6px">🐺 Round in progress</div>
+      <div id="resume-info" style="font-size:13px;color:var(--muted);margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="resumeGame()">Resume Round</button>
+        <button class="btn btn-danger" style="flex:1" onclick="discardSave()">Discard</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Round Info</div>
+  <div class="card">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="row">
+        <label class="text-sm" style="min-width:100px;color:var(--muted)">Course</label>
+        <div style="flex:1;display:flex;gap:6px">
+          <select id="cfg-course-select" onchange="onCourseSelect()" style="flex:1">
+            <option value="">— Select or type below —</option>
+          </select>
+          <button class="btn btn-sm" onclick="showScreen('screen-courses');renderCourseLibrary()" title="Manage courses" style="padding:8px 10px;flex-shrink:0">⚙</button>
+        </div>
+      </div>
+      <div class="row">
+        <label class="text-sm" style="min-width:100px;color:var(--muted)">Tee</label>
+        <select id="cfg-tee-select" onchange="onTeeSelect()" style="flex:1">
+          <option value="">— pick course first —</option>
+        </select>
+      </div>
+      <div class="row">
+        <label class="text-sm" style="min-width:100px;color:var(--muted)">Course Name</label>
+        <input type="text" id="cfg-course" placeholder="Or enter manually">
+      </div>
+      <div class="row">
+        <label class="text-sm" style="min-width:100px;color:var(--muted)">Date</label>
+        <input type="date" id="cfg-date">
+      </div>
+    </div>
+  </div>
+  <!-- Hole handicap ratings (shown when course loaded or manual) -->
+  <div id="cfg-hcp-section" style="display:none">
+    <div class="section-label">Hole Handicap Ratings <span class="chip">1 = hardest</span></div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Front 9</div>
+      <div class="hcp-grid" id="hcp-front-grid"></div>
+      <div style="font-size:12px;color:var(--muted);margin:14px 0 8px">Back 9</div>
+      <div class="hcp-grid" id="hcp-back-grid"></div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn btn-sm" onclick="toggleHcpSection(false)">Hide Ratings</button>
+        <button class="btn btn-sm" onclick="clearHcpRatings()">Clear</button>
+      </div>
+    </div>
+  </div>
+  <div id="cfg-hcp-show-btn" style="margin-top:8px;display:none">
+    <button class="btn btn-sm btn-full" onclick="toggleHcpSection(true)">Enter Hole Handicap Ratings manually</button>
+  </div>
+
+  <div class="section-label">Number of Players</div>
+  <div class="card">
+    <div class="row">
+      <label class="text-sm" style="min-width:120px">Players</label>
+      <select id="num-players" onchange="updateSetup()">
+        <option value="4">4 Players</option>
+        <option value="5">5 Players</option>
+        <option value="6">6 Players</option>
+        <option value="7">7 Players</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section-label">Player Names <span class="chip">in tee-off order</span></div>
+  <div class="card">
+    <div class="player-inputs" id="player-name-inputs"></div>
+  </div>
+
+  <div class="section-label">Configuration</div>
+  <div class="card">
+    <table class="config-table">
+      <thead>
+        <tr>
+          <th>Setting</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="label-cell">Lowest Player as Wolf hole</td>
+          <td><input type="number" id="cfg-wolf-hole" min="15" max="18" value="17" style="width:70px;text-align:center"></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Points · Holes 1–8</td>
+          <td><input type="number" id="cfg-pts-front" min="1" max="20" value="2" style="width:70px;text-align:center"></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Points · Holes 9–Wolf hole</td>
+          <td><input type="number" id="cfg-pts-back" min="1" max="20" value="4" style="width:70px;text-align:center"></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="text-xs text-muted mt-2" style="padding-top:8px;border-top:1px solid var(--border)">
+      Points for the Wolf holes (from Lowest Player Wolf hole to hole 18) are entered hole-by-hole during play.
+    </div>
+  </div>
+
+  <div class="section-label">Point Multiplier Reference</div>
+  <div class="card">
+    <table class="mult-table" id="mult-ref-table"></table>
+  </div>
+
+  <div class="mt-3">
+    <button class="btn btn-primary btn-full" onclick="startGame()" style="font-size:16px;padding:14px">
+      🐺 Start Round
+    </button>
+  </div>
+</div>
+
+<!-- ===== SCREEN: HOLE ===== -->
+<div id="screen-hole" class="screen">
+  <div class="app-header">
+    <div class="wolf-icon">🐺</div>
+    <div>
+      <div class="app-title">Wolf</div>
+      <div class="app-sub" id="hole-app-sub">Hole 1 of 18</div>
+    </div>
+    <button class="btn btn-sm" onclick="showScreen('screen-scores')" style="margin-left:auto">Scores ↗</button>
+  </div>
+
+  <!-- Hole banner -->
+  <div class="hole-banner">
+    <div>
+      <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:0.08em">Hole</div>
+      <div class="hole-num-display" id="hole-number-display">1</div>
+    </div>
+    <div class="hole-info" id="hole-info-right">
+      <div class="hole-info-label">Wolf</div>
+      <div class="hole-info-val" id="wolf-name-display">—</div>
+      <div>
+        <span class="hole-points-badge">⬡ <span id="hole-pts-display">2</span> pts</span>
+        <span class="carryover-badge" id="carryover-badge" style="display:none">+ <span id="carryover-display">0</span> carry</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wolf hole special point entry -->
+  <div id="wolf-hole-entry" style="display:none">
+    <div class="section-label">This hole's point value <span class="chip">Wolf hole — enter manually</span></div>
+    <div class="card">
+      <div class="row">
+        <label class="text-sm" style="min-width:140px">Base points this hole</label>
+        <input type="number" id="wolf-hole-pts-input" min="1" max="50" value="8" style="width:80px;text-align:center" onchange="updateWolfHolePts()">
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 1: Partner picking -->
+  <div id="phase-pick">
+    <div class="section-label">Wolf Decision</div>
+    <!-- Lone wolf buttons at top -->
+    <div style="display:flex;gap:8px;margin-bottom:10px" id="lone-wolf-btns">
+      <button class="btn btn-sm" id="btn-lone-tee" onclick="setLoneWolf('loneAfterTee')" style="flex:1;flex-direction:column;height:auto;padding:10px 8px;line-height:1.3">
+        <div style="font-size:13px;font-weight:500">🐺 Lone Wolf</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">after my tee shot</div>
+      </button>
+      <button class="btn btn-sm" id="btn-lone-all" onclick="setLoneWolf('loneAfterAll')" style="flex:1;flex-direction:column;height:auto;padding:10px 8px;line-height:1.3">
+        <div style="font-size:13px;font-weight:500">🐺 Lone Wolf</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">after all tee shots</div>
+      </button>
+    </div>
+
+    <div class="section-label">— or pick partners —</div>
+    <div class="tee-order-list" id="tee-order-list"></div>
+
+    <!-- Confirm team button -->
+    <div style="margin-top:10px" id="confirm-team-wrap">
+      <button class="btn btn-primary btn-full" onclick="confirmTeam()" style="padding:13px;font-size:15px" id="confirm-team-btn">
+        Confirm Team →
+      </button>
+    </div>
+  </div>
+
+  <!-- PHASE 2: Score entry (hidden until team confirmed) -->
+  <div id="phase-scores" style="display:none">
+    <!-- Confirmed team summary -->
+    <div class="section-label">Team</div>
+    <div id="confirmed-team-summary" class="card" style="margin-bottom:12px"></div>
+
+    <div class="section-label">Enter Scores</div>
+    <div class="card">
+      <div id="score-inputs-list"></div>
+      <div class="mt-2">
+        <button class="btn btn-primary btn-full" id="calc-result-btn" onclick="calculateHole()">Calculate Result →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div id="hole-result" style="display:none"></div>
+
+  <!-- Next hole button -->
+  <div id="next-hole-wrap" style="display:none;margin-top:12px">
+    <button class="btn btn-primary btn-full" id="next-hole-btn" onclick="nextHole()" style="font-size:16px;padding:14px"></button>
+  </div>
+</div>
+
+<!-- ===== SCREEN: SCORES ===== -->
+<div id="screen-scores" class="screen">
+  <div class="app-header">
+    <div class="wolf-icon">🐺</div>
+    <div>
+      <div class="app-title">Scoreboard</div>
+      <div class="app-sub" id="scores-sub">After hole 0</div>
+    </div>
+  </div>
+
+  <div id="scorecard-info" style="margin-bottom:12px;display:none">
+    <div style="font-size:13px;color:var(--muted)" id="scorecard-course"></div>
+    <div style="font-size:12px;color:var(--muted)" id="scorecard-date"></div>
+  </div>
+  <div class="section-label">Running Totals</div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="score-table" id="scoreboard-table">
+      <thead>
+        <tr>
+          <th>Player</th>
+          <th>Points</th>
+          <th>This Hole</th>
+        </tr>
+      </thead>
+      <tbody id="scoreboard-body"></tbody>
+    </table>
+  </div>
+
+  <div class="section-label">Hole-by-Hole Log</div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div id="hole-log" style="padding:1rem 1.25rem"></div>
+  </div>
+
+  <div class="section-label" id="ledger-label" style="display:none">Final Ledger</div>
+  <div class="card" id="ledger-card" style="display:none"></div>
+
+  <div class="mt-3" id="back-to-hole-wrap">
+    <button class="btn btn-full" onclick="showScreen('screen-hole')">← Back to Current Hole</button>
+  </div>
+  <div class="mt-2" id="new-game-wrap" style="display:none">
+    <button class="btn btn-danger btn-full" onclick="newGame()">New Game</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN: COURSE LIBRARY ===== -->
+<div id="screen-courses" class="screen">
+  <div class="app-header">
+    <div class="wolf-icon">🐺</div>
+    <div>
+      <div class="app-title">Courses</div>
+      <div class="app-sub">Course Library</div>
+    </div>
+    <button class="btn btn-sm" onclick="closeCourseLibrary()" style="margin-left:auto">← Back</button>
+  </div>
+
+  <div id="course-list-section">
+    <div class="section-label">Saved Courses</div>
+    <div class="card" id="course-list-card">
+      <div id="course-list-body"></div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="showAddCourse()">+ Add New Course</button>
+  </div>
+
+  <!-- Add / Edit Course form -->
+  <div id="course-edit-section" style="display:none">
+    <div class="section-label" id="course-edit-label">Add Course</div>
+    <div class="card">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="row">
+          <label class="text-sm" style="min-width:90px;color:var(--muted)">Course Name</label>
+          <input type="text" id="edit-course-name" placeholder="e.g. Pebble Beach">
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Tee Sets</div>
+    <div id="tee-set-list"></div>
+    <button class="btn btn-full" onclick="addTeeSet()" style="margin-bottom:12px">+ Add Tee Set</button>
+
+    <div style="display:flex;gap:8px">
+      <button class="btn" style="flex:1" onclick="cancelCourseEdit()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveCourseEdit()">Save Course</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV BAR -->
+<nav class="nav-bar" id="main-nav" style="display:none">
+  <button class="nav-item active" id="nav-hole" onclick="showScreen('screen-hole')">
+    <span class="nav-icon">⛳</span>Hole
+  </button>
+  <button class="nav-item" id="nav-scores" onclick="showScreen('screen-scores');renderScoreboard()">
+    <span class="nav-icon">📋</span>Scores
+  </button>
+  <button class="nav-item" id="nav-courses" onclick="showScreen('screen-courses');renderCourseLibrary()">
+    <span class="nav-icon">🏌</span>Courses
+  </button>
+</nav>
+
+<script>
+// ===================== STATE =====================
+const MULTIPLIERS = {
+  //         4    5    6    7
+  loneAfterTee:  [3,   4,   5,   6],
+  loneAfterAll:  [2,   3,   4,   5],
+  picks1:        [1,   2,   3,   4],
+  picks2:        [null,1,   1,   2],
+  picks3:        [null,null,1,   1],
+};
+const MULT_LABELS = ['Lone Wolf (after tee)','Lone Wolf (after all)','Picks 1','Picks 2','Picks 3'];
+const MULT_KEYS   = ['loneAfterTee','loneAfterAll','picks1','picks2','picks3'];
+
+const DEFAULT_WOLF_HOLE = {4:17, 5:16, 6:16, 7:16};
+const DEFAULT_PTS_FRONT = {4:2, 5:3, 6:2, 7:3};
+const DEFAULT_PTS_BACK  = {4:4, 5:3, 6:4, 7:3};
+
+let G = {}; // game state
+
+function defaultG() {
+  return {
+    players: [],
+    numPlayers: 4,
+    wolfHole: 17,
+    ptsFront: 2,
+    ptsBack: 4,
+    course: '',
+    date: '',
+    handicaps: [],
+    holeRatings: null,
+    hasHandicaps: false,
+    currentHole: 1,
+    scores: [], // array of {hole, wolfIdx, partnerIdxs, mode, basePoints, totalPoints, carryover, result, playerDeltas}
+    points: [], // running point total per player
+    lastHoleDeltas: [],
+    carryover: 0,
+    gameOver: false,
+  };
+}
+
+// ===================== SETUP =====================
+function updateSetup() {
+  const n = parseInt(document.getElementById('num-players').value);
+  const wolfHoleDefault = DEFAULT_WOLF_HOLE[n];
+  const pfDefault = DEFAULT_PTS_FRONT[n];
+  const pbDefault = DEFAULT_PTS_BACK[n];
+  document.getElementById('cfg-wolf-hole').value = wolfHoleDefault;
+  document.getElementById('cfg-pts-front').value = pfDefault;
+  document.getElementById('cfg-pts-back').value = pbDefault;
+
+  // Player name inputs
+  const cont = document.getElementById('player-name-inputs');
+  const existing = [];
+  const existingHcps = [];
+  cont.querySelectorAll('.player-row').forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    existing.push(inputs[0] ? inputs[0].value : '');
+    existingHcps.push(inputs[1] ? inputs[1].value : '');
+  });
+  cont.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const row = document.createElement('div');
+    row.className = 'player-row';
+    const existingHcp = existingHcps[i] !== undefined ? existingHcps[i] : '';
+    row.innerHTML = `
+      <div class="player-num">${i+1}</div>
+      <input type="text" placeholder="Player ${i+1}" value="${existing[i]||''}" style="flex:1">
+      <input type="number" min="0" max="36" placeholder="HCP" title="Course Handicap"
+        value="${existingHcp}" style="width:70px;text-align:center;flex-shrink:0">
+    `;
+    cont.appendChild(row);
+  }
+
+  renderMultTable(n);
+}
+
+function renderMultTable(n) {
+  const cols = [4,5,6,7];
+  let html = '<thead><tr><th style="text-align:left">Decision</th>';
+  cols.forEach(c => html += `<th>${c}P</th>`);
+  html += '</tr></thead><tbody>';
+  MULT_KEYS.forEach((k,ki) => {
+    html += `<tr><td style="text-align:left;font-size:12px">${MULT_LABELS[ki]}</td>`;
+    cols.forEach((c,ci) => {
+      const v = MULTIPLIERS[k][ci];
+      if (v === null) html += `<td class="na">—</td>`;
+      else html += `<td class="${c===n?'highlight':''}">${v}×</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  document.getElementById('mult-ref-table').innerHTML = html;
+}
+
+function startGame() {
+  const n = parseInt(document.getElementById('num-players').value);
+  const names = [], handicaps = [];
+  document.getElementById('player-name-inputs').querySelectorAll('.player-row').forEach((row, idx) => {
+    const inputs = row.querySelectorAll('input');
+    names.push((inputs[0]?.value||'').trim() || `Player ${idx+1}`);
+    handicaps.push(parseInt(inputs[1]?.value)||0);
+  });
+  // Hole handicap ratings
+  const holeRatings = [];
+  for (let h = 1; h <= 18; h++) {
+    const el = document.getElementById(`hcp-hole-${h}`);
+    holeRatings.push(el ? (parseInt(el.value)||h) : h);
+  }
+  const hasHandicaps = handicaps.some(h => h > 0);
+  const hasRatings = document.getElementById('cfg-hcp-section').style.display !== 'none';
+
+  G = defaultG();
+  G.numPlayers = n;
+  G.players = names;
+  G.wolfHole = parseInt(document.getElementById('cfg-wolf-hole').value);
+  G.ptsFront = parseInt(document.getElementById('cfg-pts-front').value);
+  G.ptsBack  = parseInt(document.getElementById('cfg-pts-back').value);
+  G.course      = document.getElementById('cfg-course').value.trim() || 'Unknown Course';
+  G.date        = document.getElementById('cfg-date').value || new Date().toISOString().slice(0,10);
+  G.handicaps   = handicaps;
+  G.holeRatings = hasRatings ? holeRatings : null; // null = no handicap hole allocation
+  G.hasHandicaps = hasHandicaps && hasRatings;
+  G.points      = new Array(n).fill(0);
+  G.lastHoleDeltas = new Array(n).fill(0);
+
+  saveGame();
+  document.getElementById('main-nav').style.display = 'flex';
+  showScreen('screen-hole');
+  renderHole();
+}
+
+// ===================== HOLE SCREEN =====================
+let holeState = {};
+
+function renderHole() {
+  const h = G.currentHole;
+  const n = G.numPlayers;
+  const isWolfHole = h >= G.wolfHole;
+
+  // Determine wolf
+  let wolfIdx;
+  if (isWolfHole) {
+    // Player with fewest points; tie → random
+    const minPts = Math.min(...G.points);
+    const tied = G.points.map((p,i) => p===minPts?i:-1).filter(i=>i>=0);
+    wolfIdx = tied[Math.floor(Math.random()*tied.length)];
+  } else {
+    wolfIdx = (h - 1) % n;
+  }
+
+  // Tee order starts from wolf
+  const teeOrder = [];
+  for (let i = 0; i < n; i++) teeOrder.push((wolfIdx + i) % n);
+
+  // Base points — wolf holes use ONLY the manually entered value
+  let basePts;
+  if (isWolfHole) {
+    basePts = holeState.wolfHolePts || 8;
+    // Do not add front/back configured values — wolf hole entry is the sole source
+  } else if (h <= 8) {
+    basePts = G.ptsFront;
+  } else {
+    basePts = G.ptsBack;
+  }
+
+  holeState = {
+    hole: h,
+    wolfIdx,
+    teeOrder,
+    partnerIdxs: [],
+    mode: null, // 'loneAfterTee','loneAfterAll','picks1','picks2','picks3'
+    basePts,
+    isWolfHole,
+    wolfHolePts: isWolfHole ? (holeState.wolfHolePts||8) : null,
+    scores: new Array(n).fill(''),
+    resultShown: false,
+    holeMultiplier: 1,
+  };
+
+  // Header
+  document.getElementById('hole-app-sub').textContent = `Hole ${h} of 18`;
+  document.getElementById('hole-number-display').textContent = h;
+  document.getElementById('wolf-name-display').textContent = G.players[wolfIdx];
+  const displayCarryover = isWolfHole ? 0 : G.carryover;
+  document.getElementById('hole-pts-display').textContent = basePts + displayCarryover;
+
+  const coBadge = document.getElementById('carryover-badge');
+  if (displayCarryover > 0) {
+    coBadge.style.display = 'inline-flex';
+    document.getElementById('carryover-display').textContent = displayCarryover;
+  } else {
+    coBadge.style.display = 'none';
+  }
+
+  // Wolf hole point entry
+  const wolfHoleEntry = document.getElementById('wolf-hole-entry');
+  if (isWolfHole) {
+    wolfHoleEntry.style.display = 'block';
+    document.getElementById('wolf-hole-pts-input').value = holeState.wolfHolePts || 8;
+  } else {
+    wolfHoleEntry.style.display = 'none';
+  }
+
+  renderTeeOrder();
+  renderScoreInputs();
+
+  // Reset phases
+  document.getElementById('phase-pick').style.display = 'block';
+  document.getElementById('phase-scores').style.display = 'none';
+  document.getElementById('btn-lone-tee').style.borderColor = 'var(--border)';
+  document.getElementById('btn-lone-tee').style.color = '';
+  document.getElementById('btn-lone-all').style.borderColor = 'var(--border)';
+  document.getElementById('btn-lone-all').style.color = '';
+
+  document.getElementById('hole-result').style.display = 'none';
+  document.getElementById('next-hole-wrap').style.display = 'none';
+}
+
+function updateWolfHolePts() {
+  holeState.wolfHolePts = parseInt(document.getElementById('wolf-hole-pts-input').value) || 8;
+  holeState.basePts = holeState.wolfHolePts;
+  const woCarry = holeState.isWolfHole ? 0 : G.carryover;
+  document.getElementById('hole-pts-display').textContent = holeState.basePts + woCarry;
+}
+
+function renderTeeOrder() {
+  const list = document.getElementById('tee-order-list');
+  list.innerHTML = '';
+  const n = G.numPlayers;
+  const maxPartners = getMaxPartners();
+
+  holeState.teeOrder.forEach((pidx, order) => {
+    const isWolf = pidx === holeState.wolfIdx;
+    const isPicked = holeState.partnerIdxs.includes(pidx);
+    const card = document.createElement('div');
+
+    const pts = G.points[pidx];
+    const ptsStr = pts > 0 ? `+$${pts}` : pts < 0 ? `-$${Math.abs(pts)}` : '$0';
+
+    if (isWolf) {
+      card.className = 'tee-card is-wolf';
+      card.innerHTML = `
+        <div class="tee-num">${order+1}</div>
+        <div class="tee-name">${G.players[pidx]}</div>
+        <div class="mono" style="font-size:12px;color:var(--muted)">${ptsStr}</div>
+        <span class="role-badge role-wolf">🐺 Wolf</span>
+      `;
+    } else {
+      // Pick toggle only — tap to pick, tap again to unpick
+      const atMax = holeState.partnerIdxs.length >= maxPartners && !isPicked;
+      card.className = `tee-card${isPicked ? ' is-partner' : ''}`;
+      card.innerHTML = `
+        <div class="tee-num">${order+1}</div>
+        <div class="tee-name">${G.players[pidx]}</div>
+        <div class="mono" style="font-size:12px;color:var(--muted)">${ptsStr}</div>
+        <button onclick="togglePick(${pidx})"
+          style="padding:6px 18px;border-radius:6px;border:1px solid;font-size:13px;font-weight:500;cursor:pointer;
+            background:${isPicked?'#0d1a12':'transparent'};
+            color:${isPicked?'#3db370':'var(--muted)'};
+            border-color:${isPicked?'#235c38':'var(--border)'};
+            font-family:var(--font-sans,sans-serif)"
+          ${atMax?'disabled title="Max partners reached"':''}>
+          ${isPicked ? '✓ Picked' : 'Pick'}
+        </button>
+      `;
+    }
+    list.appendChild(card);
+  });
+
+  updateConfirmButton();
+}
+
+function getMaxPartners() {
+  const n = G.numPlayers;
+  // Max depends on what multipliers are available
+  if (MULTIPLIERS.picks3[n-4] !== null) return 3;
+  if (MULTIPLIERS.picks2[n-4] !== null) return 2;
+  return 1;
+}
+
+function togglePick(pidx) {
+  if (holeState.resultShown) return;
+  if (holeState.partnerIdxs.includes(pidx)) {
+    // Un-pick
+    holeState.partnerIdxs = holeState.partnerIdxs.filter(i => i !== pidx);
+  } else {
+    if (holeState.partnerIdxs.length < getMaxPartners()) {
+      holeState.partnerIdxs.push(pidx);
+    }
+  }
+  renderTeeOrder();
+}
+
+function setLoneWolf(modeKey) {
+  holeState.partnerIdxs = [];
+  holeState.mode = modeKey;
+  // Highlight active lone wolf button
+  document.getElementById('btn-lone-tee').style.borderColor = modeKey==='loneAfterTee' ? 'var(--gold)' : 'var(--border)';
+  document.getElementById('btn-lone-tee').style.color = modeKey==='loneAfterTee' ? 'var(--gold)' : '';
+  document.getElementById('btn-lone-all').style.borderColor = modeKey==='loneAfterAll' ? 'var(--gold)' : 'var(--border)';
+  document.getElementById('btn-lone-all').style.color = modeKey==='loneAfterAll' ? 'var(--gold)' : '';
+  renderTeeOrder();
+}
+
+function updateConfirmButton() {
+  const btn = document.getElementById('confirm-team-btn');
+  const np = holeState.partnerIdxs.length;
+  const isLone = holeState.mode === 'loneAfterTee' || holeState.mode === 'loneAfterAll';
+  if (isLone) {
+    const n = G.numPlayers;
+    const mult = MULTIPLIERS[holeState.mode][n-4];
+    btn.textContent = `Confirm Lone Wolf (${mult}×) →`;
+  } else if (np === 0) {
+    btn.textContent = 'Confirm Team →';
+  } else {
+    const modeKey = np===1?'picks1':np===2?'picks2':'picks3';
+    const n = G.numPlayers;
+    const mult = MULTIPLIERS[modeKey][n-4];
+    const names = holeState.partnerIdxs.map(i=>G.players[i]).join(', ');
+    btn.textContent = `Confirm: Picks ${np} — ${names} (${mult}×) →`;
+  }
+}
+
+function confirmTeam() {
+  const np = holeState.partnerIdxs.length;
+  const isLone = holeState.mode === 'loneAfterTee' || holeState.mode === 'loneAfterAll';
+
+  if (!isLone) {
+    if (np === 0) { alert('Pick at least one partner, or declare Lone Wolf.'); return; }
+    holeState.mode = np===1?'picks1':np===2?'picks2':'picks3';
+  }
+
+  // Validate multiplier exists
+  const n = G.numPlayers;
+  const mult = MULTIPLIERS[holeState.mode][n-4];
+  if (mult === null) { alert('Invalid pick count for this player count.'); return; }
+
+  // Hide phase 1, show phase 2
+  document.getElementById('phase-pick').style.display = 'none';
+  document.getElementById('phase-scores').style.display = 'block';
+
+  // Reset calculate button in case it was disabled on a previous hole
+  const calcBtn = document.getElementById('calc-result-btn');
+  if (calcBtn) { calcBtn.disabled = false; calcBtn.textContent = 'Calculate Result →'; calcBtn.style.opacity = '1'; }
+
+  // Render confirmed team summary
+  renderTeamSummary();
+  renderScoreInputs();
+}
+
+function renderTeamSummary() {
+  const n = G.numPlayers;
+  const wolfTeam = [holeState.wolfIdx, ...holeState.partnerIdxs];
+  const opponents = [];
+  for (let i = 0; i < n; i++) { if (!wolfTeam.includes(i)) opponents.push(i); }
+  const mult = MULTIPLIERS[holeState.mode][n-4];
+  const coForSummary = holeState.isWolfHole ? 0 : G.carryover;
+  const totalPts = (holeState.basePts + coForSummary) * mult;
+  const modeLabel = {loneAfterTee:'Lone Wolf (after tee)',loneAfterAll:'Lone Wolf (after all)',picks1:'Picks 1',picks2:'Picks 2',picks3:'Picks 3'}[holeState.mode];
+
+  const curMult = holeState.holeMultiplier || 1;
+  const effectiveStake = totalPts * curMult;
+  const el = document.getElementById('confirmed-team-summary');
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:13px;color:var(--muted)">${modeLabel} · ${mult}×</span>
+      <button class="btn btn-sm" onclick="resetPicking()" style="font-size:12px;padding:4px 10px">Edit</button>
+    </div>
+    <div style="display:flex;gap:16px;margin-bottom:14px">
+      <div style="flex:1">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px">Wolf Team</div>
+        ${wolfTeam.map(i=>`<div style="font-size:14px;font-weight:500;color:${i===holeState.wolfIdx?'var(--gold)':'#3db370'};padding:2px 0">
+          ${i===holeState.wolfIdx?'🐺 ':''}${G.players[i]}
+        </div>`).join('')}
+      </div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div style="flex:1">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px">Opponents</div>
+        ${opponents.map(i=>`<div style="font-size:14px;color:var(--muted);padding:2px 0">${G.players[i]}</div>`).join('')}
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:12px;display:flex;align-items:center;gap:12px">
+      <div style="flex:1">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:4px">Hole Stake Multiplier</div>
+        <div style="font-size:11px;color:var(--muted)">This hole only · not carried forward</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="adjustHoleMult(-1)"
+          style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-sans,sans-serif)">−</button>
+        <span id="hole-mult-display" style="font-size:22px;font-weight:500;color:var(--gold);font-family:'DM Mono',monospace;min-width:28px;text-align:center">${curMult}</span>
+        <button onclick="adjustHoleMult(1)"
+          style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-sans,sans-serif)">+</button>
+      </div>
+      <div style="text-align:right;min-width:60px">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Stake</div>
+        <div id="hole-stake-display" style="font-size:18px;font-weight:500;color:var(--gold);font-family:'DM Mono',monospace">$${effectiveStake.toFixed(0)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function adjustHoleMult(delta) {
+  holeState.holeMultiplier = Math.max(1, (holeState.holeMultiplier || 1) + delta);
+  // Update display without full re-render
+  const n = G.numPlayers;
+  const mult = MULTIPLIERS[holeState.mode][n-4];
+  const coForSummary = holeState.isWolfHole ? 0 : G.carryover;
+  const baseTotalPts = (holeState.basePts + coForSummary) * mult;
+  const effectiveStake = baseTotalPts * holeState.holeMultiplier;
+  const multEl = document.getElementById('hole-mult-display');
+  const stakeEl = document.getElementById('hole-stake-display');
+  if (multEl) multEl.textContent = holeState.holeMultiplier;
+  if (stakeEl) stakeEl.textContent = '$' + effectiveStake.toFixed(0);
+}
+
+function resetPicking() {
+  holeState.partnerIdxs = [];
+  holeState.mode = null;
+  document.getElementById('phase-pick').style.display = 'block';
+  document.getElementById('phase-scores').style.display = 'none';
+  document.getElementById('btn-lone-tee').style.borderColor = 'var(--border)';
+  document.getElementById('btn-lone-tee').style.color = '';
+  document.getElementById('btn-lone-all').style.borderColor = 'var(--border)';
+  document.getElementById('btn-lone-all').style.color = '';
+  renderTeeOrder();
+}
+
+
+// Returns how many strokes player pidx receives on hole h (1-based)
+function strokesOnHole(pidx, h) {
+  if (!G.hasHandicaps || !G.holeRatings) return 0;
+  // Relative handicap: lowest handicap player plays scratch; everyone gets the difference
+  const minHcp = Math.min(...G.handicaps);
+  const playingHcp = (G.handicaps[pidx] || 0) - minHcp;
+  if (playingHcp <= 0) return 0;
+  const rating = G.holeRatings[h-1]; // hole's handicap rating (1=hardest)
+  const fullStrokes = Math.floor(playingHcp / 18);
+  const extraStrokes = playingHcp % 18;
+  return fullStrokes + (rating <= extraStrokes ? 1 : 0);
+}
+
+function renderScoreInputs() {
+  const list = document.getElementById('score-inputs-list');
+  list.innerHTML = '';
+  const h = holeState.hole;
+  holeState.teeOrder.forEach((pidx, order) => {
+    const strokes = strokesOnHole(pidx, h);
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)';
+    if (order === holeState.teeOrder.length-1) row.style.borderBottom = 'none';
+    const strokeBadge = strokes > 0
+      ? `<span class="hcp-stroke-badge" title="${strokes} stroke(s) on this hole">${strokes}</span>`
+      : (G.hasHandicaps ? `<span style="width:20px"></span>` : '');
+    row.innerHTML = `
+      <div style="flex:1;font-size:14px;font-weight:500">${G.players[pidx]}</div>
+      ${strokeBadge}
+      <input class="score-input" type="number" min="1" max="15" placeholder="Gross"
+        id="score-input-${pidx}" value="${holeState.scores[pidx]||''}"
+        onchange="holeState.scores[${pidx}]=this.value">
+    `;
+    list.appendChild(row);
+  });
+}
+
+// ===================== CALCULATE =====================
+function calculateHole() {
+  const calcBtn = document.getElementById('calc-result-btn');
+  if (calcBtn) { calcBtn.disabled = true; calcBtn.textContent = 'Calculated ✓'; calcBtn.style.opacity = '0.5'; }
+  // Validate scores
+  for (let i = 0; i < G.numPlayers; i++) {
+    const v = parseInt(document.getElementById(`score-input-${i}`)?.value);
+    if (!v || v < 1) { alert(`Enter a score for ${G.players[i]}`); return; }
+    holeState.scores[i] = v;
+  }
+  if (!holeState.mode) { alert('Select Wolf decision (Lone Wolf or Picks N)'); return; }
+
+  const n = G.numPlayers;
+  const wolfIdx = holeState.wolfIdx;
+  const partnerIdxs = holeState.partnerIdxs;
+  const mode = holeState.mode;
+
+  // Team composition
+  const wolfTeam = [wolfIdx, ...partnerIdxs];
+  const opponents = [];
+  for (let i = 0; i < n; i++) { if (!wolfTeam.includes(i)) opponents.push(i); }
+
+  // Net scores = gross - strokes received on this hole
+  const netScores = Array.from({length: n}, (_, i) =>
+    holeState.scores[i] - strokesOnHole(i, holeState.hole)
+  );
+  // Best net score per team
+  const wolfTeamBest = Math.min(...wolfTeam.map(i => netScores[i]));
+  const oppBest = Math.min(...opponents.map(i => netScores[i]));
+
+  // Multiplier
+  const mult = MULTIPLIERS[mode][n-4];
+  const basePts = holeState.basePts;
+  // Wolf holes never include carryover — stake stands alone
+  const effectiveCarryover = holeState.isWolfHole ? 0 : G.carryover;
+  // holeMultiplier is a one-off per-hole boost, never carried forward
+  const holeMultiplier = holeState.holeMultiplier || 1;
+  const totalPts = (basePts + effectiveCarryover) * mult * holeMultiplier;
+
+  const deltas = new Array(n).fill(0);
+  let resultType, resultMsg;
+
+  // Distribute pot in whole dollars. Floor everyone, then randomly give $1 to
+  // as many winners as needed to account for the remainder (one extra per winner max).
+  function distributeExact(pot, winners, favorFirst) {
+    const baseFloor = Math.floor(pot / winners.length); // whole dollars
+    let remainderDollars = Math.round(pot - baseFloor * winners.length);
+    winners.forEach(i => deltas[i] = baseFloor);
+    // Build shuffled pool; if favorFirst, Wolf leads
+    const pool = [...winners];
+    const shuffleFrom = favorFirst ? 1 : 0;
+    for (let i = pool.length - 1; i > shuffleFrom; i--) {
+      const j = shuffleFrom + Math.floor(Math.random() * (i - shuffleFrom + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    // Give $1 to each winner in pool order until remainder is gone
+    for (let i = 0; i < pool.length && remainderDollars > 0; i++) {
+      deltas[pool[i]] += 1;
+      remainderDollars--;
+    }
+  }
+
+  if (wolfTeamBest === oppBest) {
+    // Push / carryover (never on wolf holes)
+    resultType = 'push';
+    resultMsg = 'Push — points carry to next hole';
+    if (!holeState.isWolfHole) G.carryover += basePts;
+  } else if (wolfTeamBest < oppBest) {
+    // Wolf team wins — each opponent pays totalPts; pot split among wolf team
+    const pot = opponents.length * totalPts;
+    distributeExact(pot, wolfTeam, true); // Wolf first for remainder
+    opponents.forEach(i => deltas[i] = -totalPts);
+    resultType = 'wolf-wins';
+    resultMsg = 'Wolf Team Wins!';
+    G.carryover = 0;
+  } else {
+    // Opponents win — each wolf team member pays totalPts; pot split among opponents
+    const pot = wolfTeam.length * totalPts;
+    distributeExact(pot, opponents, false); // random among opponents
+    wolfTeam.forEach(i => deltas[i] = -totalPts);
+    resultType = 'opponents-win';
+    resultMsg = 'Opponents Win!';
+    G.carryover = 0;
+  }
+
+  // Apply deltas
+  for (let i = 0; i < n; i++) G.points[i] += deltas[i];
+  G.lastHoleDeltas = deltas;
+  saveGame();
+
+  // Log
+  G.scores.push({
+    hole: holeState.hole,
+    wolfIdx,
+    partnerIdxs: [...partnerIdxs],
+    mode,
+    basePts,
+    holeMultiplier: holeState.holeMultiplier || 1,
+    grossScores: [...holeState.scores],
+    totalPts: resultType === 'push' ? 0 : totalPts,
+    carryover: G.carryover,
+    result: resultType,
+    deltas: [...deltas],
+  });
+
+  // Show result
+  holeState.resultShown = true;
+  showHoleResult(resultType, resultMsg, deltas, wolfTeam, opponents, totalPts, mult);
+}
+
+function showHoleResult(type, msg, deltas, wolfTeam, opponents, totalPts, mult) {
+  const res = document.getElementById('hole-result');
+  res.style.display = 'block';
+
+  const n = G.numPlayers;
+  const colorClass = type==='wolf-wins'?'wolf-wins':type==='opponents-win'?'opponents-win':'push';
+  const icon = type==='wolf-wins'?'🐺':type==='opponents-win'?'⚔️':'🤝';
+
+  const sortedIdxs = [...Array(n).keys()].sort((a,b) => G.points[b] - G.points[a]);
+  const showHcp = G.hasHandicaps;
+
+  let deltaRows = '';
+  // Header
+  deltaRows += '<div style="display:flex;padding:0 0 6px;border-bottom:1px solid var(--border);margin-bottom:2px">'
+    + '<span style="flex:1;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Player</span>'
+    + (showHcp ? '<span style="width:52px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)">Gross</span>'
+               + '<span style="width:44px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)">Net</span>' : '')
+    + '<span style="width:66px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Hole $</span>'
+    + '<span style="width:66px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Total</span>'
+    + '</div>';
+
+  sortedIdxs.forEach(function(i) {
+    const d = deltas[i];
+    const total = G.points[i];
+    const gross = holeState.scores[i];
+    const strokes = strokesOnHole(i, holeState.hole);
+    const net = gross - strokes;
+    const dsign = d > 0 ? '+' : '';
+    const tsign = total > 0 ? '+' : '';
+    const dcls = d > 0 ? 'color:#27ae60' : d < 0 ? 'color:#c0392b' : 'color:var(--muted)';
+    const tcls = total > 0 ? 'color:#27ae60' : total < 0 ? 'color:#c0392b' : 'color:var(--muted)';
+    const isWolf = i === holeState.wolfIdx;
+    const isPartner = holeState.partnerIdxs.includes(i);
+    const nameColor = isWolf ? 'color:var(--gold)' : isPartner ? 'color:#3db370' : 'color:var(--text)';
+    const wolfIcon = isWolf ? '🐺 ' : '';
+    const dVal = d === 0 ? '—' : dsign + '$' + Math.abs(d).toFixed(0);
+    const tVal = tsign + '$' + Math.abs(total).toFixed(0);
+    const strokeDot = strokes > 0 ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold);margin-left:3px;vertical-align:middle"></span>' : '';
+    deltaRows += '<div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">'
+      + '<span style="flex:1;font-size:14px;font-weight:500;' + nameColor + '">' + wolfIcon + G.players[i] + '</span>'
+      + (showHcp
+          ? '<span class="mono" style="width:52px;text-align:right;font-size:13px;color:var(--muted)">' + gross + strokeDot + '</span>'
+          + '<span class="mono" style="width:44px;text-align:right;font-size:13px;color:var(--text)">' + net + '</span>'
+          : '')
+      + '<span class="mono" style="width:66px;text-align:right;font-size:14px;' + dcls + '">' + dVal + '</span>'
+      + '<span class="mono" style="width:66px;text-align:right;font-size:15px;font-weight:500;' + tcls + '">' + tVal + '</span>'
+      + '</div>';
+  });
+
+  res.innerHTML = '<div class="result-banner ' + colorClass + '">'
+    + '<div class="result-title">' + icon + ' ' + msg + '</div>'
+    + '<div class="text-sm text-muted mt-1">' + mult + '× multiplier · $' + totalPts.toFixed(0) + ' total stake</div>'
+    + '</div>'
+    + '<div class="card" style="padding:1rem 1.25rem">' + deltaRows + '</div>';
+
+  const nextWrap = document.getElementById('next-hole-wrap');
+  nextWrap.style.display = 'block';
+  const nextBtn = document.getElementById('next-hole-btn');
+  if (G.currentHole >= 18) {
+    nextBtn.textContent = '🏁 View Final Scores';
+    nextBtn.onclick = function() { G.gameOver = true; saveGame(); showScreen('screen-scores'); renderScoreboard(); };
+  } else {
+    nextBtn.textContent = 'Next Hole (' + (G.currentHole+1) + ') →';
+  }
+}
+
+function nextHole() {
+  if (G.currentHole >= 18) return;
+  G.currentHole++;
+  holeState = {};
+  renderHole();
+  window.scrollTo(0,0);
+}
+
+// ===================== SCOREBOARD =====================
+function renderScoreboard() {
+  const n = G.numPlayers;
+  const h = G.currentHole;
+  const holesPlayed = G.scores.length;
+  document.getElementById('scores-sub').textContent = `After hole ${holesPlayed}`;
+  const sciEl = document.getElementById('scorecard-info');
+  if (G.course || G.date) {
+    sciEl.style.display = 'block';
+    document.getElementById('scorecard-course').textContent = '⛳ ' + (G.course || '');
+    const d = G.date ? new Date(G.date + 'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'}) : '';
+    document.getElementById('scorecard-date').textContent = d;
+  }
+
+  // Scoreboard table
+  const tbody = document.getElementById('scoreboard-body');
+  const sortedIdxs = [...Array(n).keys()].sort((a,b) => G.points[b]-G.points[a]);
+  tbody.innerHTML = '';
+  sortedIdxs.forEach(i => {
+    const pts = G.points[i];
+    const d = G.lastHoleDeltas[i] || 0;
+    const ptsCls = pts > 0 ? 'positive' : pts < 0 ? 'negative' : '';
+    const dCls = d > 0 ? 'positive' : d < 0 ? 'negative' : 'text-muted';
+    const sign = pts > 0 ? '+' : '';
+    const dsign = d > 0 ? '+' : '';
+    const isWolf = !G.gameOver && i === ((h-1) % n) && h <= G.wolfHole;
+    tbody.innerHTML += `<tr>
+      <td><div class="player-name-cell">${isWolf?'<span class="wolf-dot"></span>':''} ${G.players[i]}</div></td>
+      <td class="${ptsCls}">${sign}$${pts.toFixed(1)}</td>
+      <td class="${dCls}">${d!==0?dsign+'$'+Math.abs(d).toFixed(1):'—'}</td>
+    </tr>`;
+  });
+
+  // Hole log
+  const log = document.getElementById('hole-log');
+  if (G.scores.length === 0) {
+    log.innerHTML = '<div class="text-muted text-sm">No holes played yet.</div>';
+  } else {
+    log.innerHTML = G.scores.map((s, si) => {
+      const wolfName = G.players[s.wolfIdx];
+      const modeStr = MULT_LABELS[MULT_KEYS.indexOf(s.mode)];
+      const resultIcon = s.result==='wolf-wins'?'🐺':s.result==='opponents-win'?'⚔️':'🤝';
+      const isWolfHole = s.hole >= G.wolfHole;
+      const editBtn = `<button class="btn btn-sm" onclick="startEditHole(${si})" style="font-size:11px;padding:3px 10px">Edit</button>`;
+      const multBadge = (s.holeMultiplier && s.holeMultiplier > 1)
+        ? `<span style="font-size:11px;color:var(--gold);margin-left:4px">${s.holeMultiplier}× boost</span>` : '';
+      return `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <div class="row-between">
+          <span class="bold">Hole ${s.hole}${isWolfHole?' <span style="font-size:10px;color:var(--gold)">Wolf hole</span>':''}</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span>${resultIcon} ${s.result==='push'?'Push':s.result==='wolf-wins'?'Wolf wins':'Opponents win'}</span>
+            ${editBtn}
+          </div>
+        </div>
+        <div class="text-sm text-muted mt-1">Wolf: ${wolfName} · ${modeStr} · $${s.totalPts.toFixed(0)} stake${multBadge}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Ledger
+  if (G.gameOver) {
+    document.getElementById('ledger-label').style.display = 'block';
+    const ledgerCard = document.getElementById('ledger-card');
+    ledgerCard.style.display = 'block';
+    ledgerCard.innerHTML = buildLedger();
+    document.getElementById('back-to-hole-wrap').style.display = 'none';
+    document.getElementById('new-game-wrap').style.display = 'block';
+    document.getElementById('nav-hole').style.display = 'none';
+  }
+}
+
+// ===================== EDIT HOLE =====================
+
+// Pure payout calculator — same logic as calculateHole but operates on a
+// stored score record rather than live holeState. Returns {deltas, result, totalPts, carryoverOut}.
+function computeHolePayout(s, carryoverIn) {
+  const n = G.numPlayers;
+  const wolfTeam = [s.wolfIdx, ...s.partnerIdxs];
+  const opponents = [];
+  for (let i = 0; i < n; i++) { if (!wolfTeam.includes(i)) opponents.push(i); }
+
+  const isWolfHole = s.hole >= G.wolfHole;
+  const effectiveCarryover = isWolfHole ? 0 : carryoverIn;
+  const mult = MULTIPLIERS[s.mode][n-4];
+  const holeMultiplier = s.holeMultiplier || 1;
+  const totalPts = (s.basePts + effectiveCarryover) * mult * holeMultiplier;
+
+  const netScores = (s.grossScores || s.scores || []).map((gross, i) =>
+    gross - strokesOnHole(i, s.hole)
+  );
+  const wolfTeamBest = Math.min(...wolfTeam.map(i => netScores[i]));
+  const oppBest = Math.min(...opponents.map(i => netScores[i]));
+
+  const deltas = new Array(n).fill(0);
+  let result, carryoverOut = 0;
+
+  function distributeExact(pot, winners, favorFirst) {
+    const baseFloor = Math.floor(pot / winners.length);
+    let remainderDollars = Math.round(pot - baseFloor * winners.length);
+    winners.forEach(i => deltas[i] = baseFloor);
+    const pool = [...winners];
+    const shuffleFrom = favorFirst ? 1 : 0;
+    for (let i = pool.length - 1; i > shuffleFrom; i--) {
+      const j = shuffleFrom + Math.floor(Math.random() * (i - shuffleFrom + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    for (let i = 0; i < pool.length && remainderDollars > 0; i++) {
+      deltas[pool[i]] += 1;
+      remainderDollars--;
+    }
+  }
+
+  if (wolfTeamBest === oppBest) {
+    result = 'push';
+    carryoverOut = isWolfHole ? 0 : carryoverIn + s.basePts;
+  } else if (wolfTeamBest < oppBest) {
+    const pot = opponents.length * totalPts;
+    distributeExact(pot, wolfTeam, true);
+    opponents.forEach(i => deltas[i] = -totalPts);
+    result = 'wolf-wins';
+  } else {
+    const pot = wolfTeam.length * totalPts;
+    distributeExact(pot, opponents, false);
+    wolfTeam.forEach(i => deltas[i] = -totalPts);
+    result = 'opponents-win';
+  }
+
+  return { deltas, result, totalPts: result === 'push' ? 0 : totalPts, carryoverOut };
+}
+
+// Replay all holes from index si to end, rebuilding points and carryover
+function replayFromHole(si) {
+  const n = G.numPlayers;
+  // Rebuild running totals up to (but not including) si
+  const points = new Array(n).fill(0);
+  let carryover = 0;
+  for (let i = 0; i < si; i++) {
+    G.scores[i].deltas.forEach((d, pi) => points[pi] += d);
+    carryover = G.scores[i].carryover;
+  }
+  // Replay from si onward
+  for (let i = si; i < G.scores.length; i++) {
+    const { deltas, result, totalPts, carryoverOut } = computeHolePayout(G.scores[i], carryover);
+    G.scores[i].deltas = deltas;
+    G.scores[i].result = result;
+    G.scores[i].totalPts = totalPts;
+    carryover = carryoverOut;
+    G.scores[i].carryover = carryover;
+    deltas.forEach((d, pi) => points[pi] += d);
+  }
+  G.points = points;
+  G.carryover = carryover;
+  G.lastHoleDeltas = G.scores.length > 0 ? G.scores[G.scores.length-1].deltas : new Array(n).fill(0);
+}
+
+// Enter edit mode for hole at log index si
+function startEditHole(si) {
+  const s = G.scores[si];
+  // Build an edit modal overlay
+  const n = G.numPlayers;
+  const wolfTeam = [s.wolfIdx, ...s.partnerIdxs];
+  const opponents = [];
+  for (let i = 0; i < n; i++) { if (!wolfTeam.includes(i)) opponents.push(i); }
+  const mult = MULTIPLIERS[s.mode][n-4];
+  const modeLabel = {loneAfterTee:'Lone Wolf (after tee)',loneAfterAll:'Lone Wolf (after all)',picks1:'Picks 1',picks2:'Picks 2',picks3:'Picks 3'}[s.mode];
+
+  // Score input rows
+  let scoreRows = '';
+  for (let i = 0; i < n; i++) {
+    const strokes = strokesOnHole(i, s.hole);
+    const strokeBadge = strokes > 0
+      ? `<span class="hcp-stroke-badge" style="margin-right:4px">${strokes}</span>` : '';
+    const isWolf = i === s.wolfIdx;
+    const isPartner = s.partnerIdxs.includes(i);
+    const nameColor = isWolf ? 'color:var(--gold)' : isPartner ? 'color:#3db370' : '';
+    scoreRows += `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <span style="flex:1;font-size:14px;font-weight:500;${nameColor}">${isWolf?'🐺 ':''}${G.players[i]}</span>
+      ${strokeBadge}
+      <input type="number" min="1" max="15" value="${(s.grossScores||[])[i]||''}"
+        id="edit-score-${i}" style="width:60px;text-align:center;padding:5px 4px;
+        background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+        color:var(--text);font-size:14px;font-family:var(--font-sans,sans-serif)">
+    </div>`;
+  }
+
+  const curMult = s.holeMultiplier || 1;
+  const isWolfHole = s.hole >= G.wolfHole;
+
+  // Wolf holes allow editing the base point value too
+  const wolfHolePtsRow = isWolfHole ? `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--border);margin-bottom:4px">
+      <div style="flex:1">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Hole Point Value</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Wolf hole — manual entry</div>
+      </div>
+      <input type="number" id="edit-basepts" min="1" max="99" value="${s.basePts}"
+        style="width:70px;text-align:center;padding:6px 4px;background:var(--surface2);
+        border:1px solid var(--border);border-radius:6px;color:var(--gold);
+        font-size:18px;font-weight:500;font-family:'DM Mono',monospace">
+    </div>` : '';
+
+  const overlay = document.createElement('div');
+  overlay.id = 'edit-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;overflow-y:auto;padding:1.5rem 1rem 3rem';
+  overlay.innerHTML = `
+    <div style="max-width:500px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border)">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold)">Edit Hole ${s.hole}${isWolfHole?' <span style="font-size:13px;color:var(--gold-dim)">Wolf Hole</span>':''}</div>
+        <button onclick="closeEditOverlay()" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);padding:4px 10px;cursor:pointer;font-family:var(--font-sans,sans-serif)">✕ Cancel</button>
+      </div>
+
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+        Wolf: <strong style="color:var(--gold)">${G.players[s.wolfIdx]}</strong> ·
+        ${modeLabel} · ${mult}× ·
+        <span style="color:var(--muted)">Team: ${wolfTeam.map(i=>G.players[i]).join(', ')} vs ${opponents.map(i=>G.players[i]).join(', ')}</span>
+      </div>
+
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px">Scores</div>
+      <div style="margin-bottom:14px">${scoreRows}</div>
+      ${wolfHolePtsRow}
+
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--border);margin-bottom:14px">
+        <div style="flex:1">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Hole Stake Multiplier</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">This hole only</div>
+        </div>
+        <button onclick="adjustEditMult(-1)"
+          style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:18px;cursor:pointer;font-family:var(--font-sans,sans-serif)">−</button>
+        <span id="edit-mult-display" style="font-size:22px;font-weight:500;color:var(--gold);font-family:'DM Mono',monospace;min-width:28px;text-align:center">${curMult}</span>
+        <button onclick="adjustEditMult(1)"
+          style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:18px;cursor:pointer;font-family:var(--font-sans,sans-serif)">+</button>
+      </div>
+
+      <button onclick="saveEditHole(${si})"
+        style="width:100%;padding:13px;border-radius:6px;background:var(--gold);color:#111;border:none;
+        font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-sans,sans-serif)">
+        Save & Recalculate →
+      </button>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  overlay.dataset.si = si;
+  overlay.dataset.mult = curMult;
+}
+
+function adjustEditMult(delta) {
+  const overlay = document.getElementById('edit-overlay');
+  if (!overlay) return;
+  let m = Math.max(1, parseInt(overlay.dataset.mult||1) + delta);
+  overlay.dataset.mult = m;
+  document.getElementById('edit-mult-display').textContent = m;
+}
+
+function closeEditOverlay() {
+  const el = document.getElementById('edit-overlay');
+  if (el) el.remove();
+}
+
+function saveEditHole(si) {
+  const n = G.numPlayers;
+  // Validate scores
+  for (let i = 0; i < n; i++) {
+    const v = parseInt(document.getElementById('edit-score-' + i)?.value);
+    if (!v || v < 1) { alert('Enter a valid score for ' + G.players[i]); return; }
+  }
+  // Update the stored score record
+  const overlay = document.getElementById('edit-overlay');
+  const newMult = parseInt(overlay.dataset.mult || 1);
+  const newGrossScores = [];
+  for (let i = 0; i < n; i++) {
+    newGrossScores.push(parseInt(document.getElementById('edit-score-' + i).value));
+  }
+  G.scores[si].grossScores = newGrossScores;
+  G.scores[si].holeMultiplier = newMult;
+  // Wolf hole — update base points if field present
+  const editBasePts = document.getElementById('edit-basepts');
+  if (editBasePts) G.scores[si].basePts = parseInt(editBasePts.value) || G.scores[si].basePts;
+
+  // Replay from this hole forward to rebuild all deltas + running totals
+  replayFromHole(si);
+  saveGame();
+  closeEditOverlay();
+
+  // Re-render hole screen so banner, carryover and result totals are current
+  refreshHoleScreenAfterEdit();
+
+  // Return to scoreboard, refreshed
+  renderScoreboard();
+  showScreen('screen-scores');
+}
+
+// Refresh the hole screen banner, tee order cards, and result card after an edit
+// without resetting holeState (picks and scores are already committed for current hole)
+function refreshHoleScreenAfterEdit() {
+  const h = G.currentHole;
+  const isWolfHole = h >= G.wolfHole;
+  const displayCarryover = isWolfHole ? 0 : G.carryover;
+
+  // ── Banner: wolf name, stake, carryover badge ──────────────────────────
+  if (holeState && holeState.wolfIdx !== undefined) {
+    document.getElementById('wolf-name-display').textContent = G.players[holeState.wolfIdx];
+  }
+  const basePts = holeState ? holeState.basePts : 0;
+  document.getElementById('hole-pts-display').textContent = basePts + displayCarryover;
+
+  const coBadge = document.getElementById('carryover-badge');
+  if (displayCarryover > 0) {
+    coBadge.style.display = 'inline-flex';
+    document.getElementById('carryover-display').textContent = displayCarryover;
+  } else {
+    coBadge.style.display = 'none';
+  }
+
+  // ── Phase 1 (Wolf Decision): refresh tee card running totals ──────────
+  if (holeState && !holeState.resultShown) {
+    renderTeeOrder();
+  }
+
+  // ── Phase 2 (Score entry): refresh team summary stake display ─────────
+  if (holeState && holeState.mode && !holeState.resultShown) {
+    renderTeamSummary();
+  }
+
+  // ── Current hole result card: re-render with fresh G.points ───────────
+  // Find the log entry for the current hole (may not be the last if editing back)
+  if (holeState && holeState.resultShown) {
+    const currentEntry = G.scores.find(s => s.hole === h);
+    if (currentEntry) {
+      const n = G.numPlayers;
+      const wolfTeam = [currentEntry.wolfIdx, ...currentEntry.partnerIdxs];
+      const opponents = [];
+      for (let i = 0; i < n; i++) { if (!wolfTeam.includes(i)) opponents.push(i); }
+      const mult = MULTIPLIERS[currentEntry.mode][n-4];
+      const resultMsg = currentEntry.result === 'wolf-wins' ? 'Wolf Team Wins!'
+        : currentEntry.result === 'opponents-win' ? 'Opponents Win!'
+        : 'Push — points carry to next hole';
+      showHoleResult(currentEntry.result, resultMsg, currentEntry.deltas, wolfTeam, opponents, currentEntry.totalPts, mult);
+    }
+  }
+}
+
+function buildLedger() {
+  // Settle debts optimally
+  const pts = [...G.points];
+  const n = G.numPlayers;
+  const transactions = [];
+
+  const balances = pts.map((p,i) => ({i, amt: p}));
+  // Separate payers (negative) and receivers (positive)
+  const payers = balances.filter(b=>b.amt<0).sort((a,b)=>a.amt-b.amt);
+  const receivers = balances.filter(b=>b.amt>0).sort((a,b)=>b.amt-a.amt);
+
+  let pi = 0, ri = 0;
+  while (pi < payers.length && ri < receivers.length) {
+    const pay = payers[pi], rec = receivers[ri];
+    const amt = Math.min(-pay.amt, rec.amt);
+    if (amt > 0.01) {
+      transactions.push({from: pay.i, to: rec.i, amt});
+    }
+    pay.amt += amt;
+    rec.amt -= amt;
+    if (Math.abs(pay.amt) < 0.01) pi++;
+    if (Math.abs(rec.amt) < 0.01) ri++;
+  }
+
+  if (transactions.length === 0) {
+    return '<div class="text-muted text-sm">All square — no money changes hands!</div>';
+  }
+
+  return transactions.map(t =>
+    `<div class="ledger-row">
+      <span style="font-size:14px">${G.players[t.from]}</span>
+      <span class="ledger-arrow">→</span>
+      <span style="font-size:14px">${G.players[t.to]}</span>
+      <span class="ledger-amt">$${t.amt.toFixed(2)}</span>
+    </div>`
+  ).join('');
+}
+
+// ===================== NAVIGATION =====================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (id === 'screen-hole') document.getElementById('nav-hole').classList.add('active');
+  if (id === 'screen-scores') document.getElementById('nav-scores').classList.add('active');
+  if (id === 'screen-courses') { const nc = document.getElementById('nav-courses'); if(nc) nc.classList.add('active'); }
+}
+
+function newGame() {
+  clearSave();
+  G = {};
+  document.getElementById('main-nav').style.display = 'none';
+  showScreen('screen-setup');
+  // Reset resume banner in case
+  document.getElementById('resume-banner').style.display = 'none';
+}
+
+// ===================== COURSE LIBRARY =====================
+const COURSES_KEY = 'wolf_courses';
+
+function getCourses() {
+  try { return JSON.parse(localStorage.getItem(COURSES_KEY)) || []; } catch(e) { return []; }
+}
+
+function saveCourses(courses) {
+  try { localStorage.setItem(COURSES_KEY, JSON.stringify(courses)); } catch(e) {}
+}
+
+// Populate course selector on setup screen
+function populateCourseSelector() {
+  const sel = document.getElementById('cfg-course-select');
+  const courses = getCourses();
+  sel.innerHTML = '<option value="">— Select course —</option>';
+  courses.forEach((c, ci) => {
+    const opt = document.createElement('option');
+    opt.value = ci;
+    opt.textContent = c.name;
+    sel.appendChild(opt);
+  });
+}
+
+function onCourseSelect() {
+  const ci = document.getElementById('cfg-course-select').value;
+  const teeSel = document.getElementById('cfg-tee-select');
+  if (ci === '') {
+    teeSel.innerHTML = '<option value="">— pick course first —</option>';
+    document.getElementById('cfg-course').value = '';
+    toggleHcpSection(false);
+    document.getElementById('cfg-hcp-show-btn').style.display = 'block';
+    return;
+  }
+  const course = getCourses()[parseInt(ci)];
+  document.getElementById('cfg-course').value = course.name;
+  // Populate tee selector
+  teeSel.innerHTML = '<option value="">— Select tee —</option>';
+  course.tees.forEach((t, ti) => {
+    const opt = document.createElement('option');
+    opt.value = ti;
+    opt.textContent = t.name + (t.yardage ? ' (' + t.yardage + ' yds)' : '');
+    teeSel.appendChild(opt);
+  });
+  document.getElementById('cfg-hcp-show-btn').style.display = 'none';
+}
+
+function onTeeSelect() {
+  const ci = document.getElementById('cfg-course-select').value;
+  const ti = document.getElementById('cfg-tee-select').value;
+  if (ci === '' || ti === '') { toggleHcpSection(false); return; }
+  const tee = getCourses()[parseInt(ci)].tees[parseInt(ti)];
+  // Load hole ratings
+  buildHcpGrid();
+  for (let h = 1; h <= 18; h++) {
+    const el = document.getElementById('hcp-hole-' + h);
+    if (el) el.value = tee.ratings[h-1] || h;
+  }
+  toggleHcpSection(true);
+}
+
+function buildHcpGrid() {
+  const frontGrid = document.getElementById('hcp-front-grid');
+  const backGrid  = document.getElementById('hcp-back-grid');
+  frontGrid.innerHTML = '';
+  backGrid.innerHTML  = '';
+  for (let h = 1; h <= 18; h++) {
+    const cell = document.createElement('div');
+    cell.className = 'hcp-cell';
+    cell.innerHTML = '<label>H' + h + '</label>'
+      + '<input type="number" id="hcp-hole-' + h + '" min="1" max="18" value="' + h + '">';
+    if (h <= 9) frontGrid.appendChild(cell);
+    else backGrid.appendChild(cell);
+  }
+}
+
+function toggleHcpSection(show) {
+  document.getElementById('cfg-hcp-section').style.display = show ? 'block' : 'none';
+  if (show && !document.getElementById('hcp-hole-1')) buildHcpGrid();
+}
+
+function clearHcpRatings() {
+  for (let h = 1; h <= 18; h++) {
+    const el = document.getElementById('hcp-hole-' + h);
+    if (el) el.value = h;
+  }
+}
+
+// ── Course Library Screen ──────────────────────────────────────────────────
+let editingCourseIdx = null; // null = new course
+
+function renderCourseLibrary() {
+  const courses = getCourses();
+  const body = document.getElementById('course-list-body');
+  if (courses.length === 0) {
+    body.innerHTML = '<div class="text-muted text-sm" style="padding:8px 0">No courses saved yet.</div>';
+  } else {
+    body.innerHTML = courses.map((c, ci) =>
+      '<div class="course-item">'
+      + '<div style="flex:1">'
+      + '<div style="font-size:14px;font-weight:500">' + c.name + '</div>'
+      + '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + c.tees.map(t=>t.name).join(' · ') + '</div>'
+      + '</div>'
+      + '<button class="btn btn-sm" onclick="editCourse(' + ci + ')" style="margin-right:6px">Edit</button>'
+      + '<button class="btn btn-sm btn-danger" onclick="deleteCourse(' + ci + ')">Del</button>'
+      + '</div>'
+    ).join('');
+  }
+  document.getElementById('course-list-section').style.display = 'block';
+  document.getElementById('course-edit-section').style.display = 'none';
+}
+
+function showAddCourse() {
+  editingCourseIdx = null;
+  document.getElementById('edit-course-name').value = '';
+  document.getElementById('course-edit-label').textContent = 'Add Course';
+  document.getElementById('tee-set-list').innerHTML = '';
+  document.getElementById('course-list-section').style.display = 'none';
+  document.getElementById('course-edit-section').style.display = 'block';
+  addTeeSet(); // start with one tee
+}
+
+function editCourse(ci) {
+  editingCourseIdx = ci;
+  const c = getCourses()[ci];
+  document.getElementById('edit-course-name').value = c.name;
+  document.getElementById('course-edit-label').textContent = 'Edit Course';
+  document.getElementById('tee-set-list').innerHTML = '';
+  c.tees.forEach(t => addTeeSet(t));
+  document.getElementById('course-list-section').style.display = 'none';
+  document.getElementById('course-edit-section').style.display = 'block';
+}
+
+function deleteCourse(ci) {
+  if (!confirm('Delete this course?')) return;
+  const courses = getCourses();
+  courses.splice(ci, 1);
+  saveCourses(courses);
+  renderCourseLibrary();
+  populateCourseSelector();
+}
+
+let teeSetCount = 0;
+function addTeeSet(existing) {
+  const id = teeSetCount++;
+  const name = existing ? existing.name : '';
+  const yardage = existing ? (existing.yardage||'') : '';
+  const ratings = existing ? existing.ratings : Array.from({length:18},(_,i)=>i+1);
+
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.id = 'tee-set-' + id;
+  div.style.marginBottom = '10px';
+
+  let frontCells = '', backCells = '';
+  for (let h = 1; h <= 18; h++) {
+    const cell = '<div class="hcp-cell"><label>H' + h + '</label>'
+      + '<input type="number" id="ts-' + id + '-h' + h + '" min="1" max="18" value="' + ratings[h-1] + '"></div>';
+    if (h <= 9) frontCells += cell; else backCells += cell;
+  }
+
+  div.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
+    + '<input type="text" placeholder="Tee name (e.g. Blue)" value="' + name + '" id="ts-' + id + '-name" style="flex:1">'
+    + '<input type="number" placeholder="Yardage" value="' + yardage + '" id="ts-' + id + '-yardage" style="width:90px;text-align:center">'
+    + '<button class="btn btn-sm btn-danger" onclick="removeTeeSet(' + id + ')">✕</button>'
+    + '</div>'
+    + '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Front 9 — Handicap Ratings</div>'
+    + '<div class="hcp-grid">' + frontCells + '</div>'
+    + '<div style="font-size:11px;color:var(--muted);margin:10px 0 4px">Back 9 — Handicap Ratings</div>'
+    + '<div class="hcp-grid">' + backCells + '</div>';
+
+  document.getElementById('tee-set-list').appendChild(div);
+}
+
+function removeTeeSet(id) {
+  const el = document.getElementById('tee-set-' + id);
+  if (el) el.remove();
+}
+
+function saveCourseEdit() {
+  const name = document.getElementById('edit-course-name').value.trim();
+  if (!name) { alert('Enter a course name.'); return; }
+
+  const teeEls = document.getElementById('tee-set-list').querySelectorAll('.card');
+  if (teeEls.length === 0) { alert('Add at least one tee set.'); return; }
+
+  const tees = [];
+  let valid = true;
+  teeEls.forEach(div => {
+    const id = div.id.replace('tee-set-', '');
+    const teeName = document.getElementById('ts-' + id + '-name').value.trim();
+    if (!teeName) { alert('Enter a name for each tee set.'); valid = false; return; }
+    const yardage = document.getElementById('ts-' + id + '-yardage').value || '';
+    const ratings = [];
+    // Validate all 18 ratings are unique 1-18
+    const seen = new Set();
+    for (let h = 1; h <= 18; h++) {
+      const v = parseInt(document.getElementById('ts-' + id + '-h' + h).value);
+      ratings.push(v);
+      seen.add(v);
+    }
+    tees.push({ name: teeName, yardage, ratings });
+  });
+  if (!valid) return;
+
+  const courses = getCourses();
+  const courseObj = { name, tees };
+  if (editingCourseIdx === null) {
+    courses.push(courseObj);
+  } else {
+    courses[editingCourseIdx] = courseObj;
+  }
+  saveCourses(courses);
+  populateCourseSelector();
+  renderCourseLibrary();
+  document.getElementById('course-list-section').style.display = 'block';
+  document.getElementById('course-edit-section').style.display = 'none';
+}
+
+function cancelCourseEdit() {
+  document.getElementById('course-list-section').style.display = 'block';
+  document.getElementById('course-edit-section').style.display = 'none';
+}
+
+function closeCourseLibrary() {
+  populateCourseSelector();
+  showScreen('screen-setup');
+}
+
+// ===================== SAVE / RESTORE =====================
+const SAVE_KEY = 'wolf_round_save';
+
+function saveGame() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(G)); } catch(e) {}
+}
+
+function clearSave() {
+  try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
+}
+
+function loadSave() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+function resumeGame() {
+  const saved = loadSave();
+  if (!saved) return;
+  G = saved;
+  document.getElementById('resume-banner').style.display = 'none';
+  document.getElementById('main-nav').style.display = 'flex';
+  if (G.gameOver) {
+    showScreen('screen-scores');
+    renderScoreboard();
+  } else {
+    showScreen('screen-hole');
+    renderHole();
+  }
+}
+
+function discardSave() {
+  clearSave();
+  document.getElementById('resume-banner').style.display = 'none';
+}
+
+// ===================== INIT =====================
+updateSetup();
+
+// Set default date to today
+document.getElementById('cfg-date').value = new Date().toISOString().slice(0,10);
+// Populate course dropdown
+populateCourseSelector();
+document.getElementById('cfg-hcp-show-btn').style.display = 'block';
+
+// Check for saved round
+(function() {
+  const saved = loadSave();
+  if (saved && !saved.gameOver) {
+    const banner = document.getElementById('resume-banner');
+    const info = document.getElementById('resume-info');
+    const d = saved.date ? new Date(saved.date + 'T12:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}) : '';
+    info.textContent = (saved.course || 'Unknown Course') + (d ? ' · ' + d : '') + ' · Hole ' + saved.currentHole + ' of 18 · ' + saved.players.join(', ');
+    banner.style.display = 'block';
+  }
+})();
+</script>
+</body>
+</html>
