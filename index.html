@@ -1725,12 +1725,71 @@ function newGame() {
 // ===================== COURSE LIBRARY =====================
 const COURSES_KEY = 'wolf_courses';
 
+// ── Storage layer with diagnostics ────────────────────────────────────────
+// In-memory fallback so data survives within a session even if localStorage fails
+let _memStore = {};
+let _storageOk = null; // null=untested, true=working, false=broken
+
+function testStorage() {
+  if (_storageOk !== null) return _storageOk;
+  try {
+    const t = '__wolf_test__';
+    localStorage.setItem(t, '1');
+    const ok = localStorage.getItem(t) === '1';
+    localStorage.removeItem(t);
+    _storageOk = ok;
+  } catch(e) {
+    _storageOk = false;
+  }
+  if (!_storageOk) showStorageWarning();
+  return _storageOk;
+}
+
+function showStorageWarning() {
+  // Only show once
+  if (document.getElementById('storage-warning')) return;
+  const el = document.createElement('div');
+  el.id = 'storage-warning';
+  el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#7a1e1e;color:#f8d7d7;'
+    + 'font-size:13px;padding:10px 14px;text-align:center;font-family:var(--font-sans,sans-serif)';
+  el.innerHTML = '⚠️ Storage unavailable — data will not persist between sessions. '
+    + 'Disable Private Browsing or check Safari settings. '
+    + '<button onclick="this.parentElement.remove()" style="margin-left:8px;background:transparent;'
+    + 'border:1px solid #f8d7d7;border-radius:4px;color:#f8d7d7;padding:2px 8px;cursor:pointer;'
+    + 'font-family:var(--font-sans,sans-serif)">✕</button>';
+  document.body.prepend(el);
+}
+
+function storeSet(key, value) {
+  _memStore[key] = value;
+  if (testStorage()) {
+    try { localStorage.setItem(key, value); } catch(e) { _storageOk = false; showStorageWarning(); }
+  }
+}
+
+function storeGet(key) {
+  if (testStorage()) {
+    try {
+      const v = localStorage.getItem(key);
+      if (v !== null) { _memStore[key] = v; return v; }
+    } catch(e) { _storageOk = false; }
+  }
+  return _memStore[key] !== undefined ? _memStore[key] : null;
+}
+
+function storeRemove(key) {
+  delete _memStore[key];
+  if (testStorage()) {
+    try { localStorage.removeItem(key); } catch(e) {}
+  }
+}
+
 function getCourses() {
-  try { return JSON.parse(localStorage.getItem(COURSES_KEY)) || []; } catch(e) { return []; }
+  try { return JSON.parse(storeGet(COURSES_KEY)) || []; } catch(e) { return []; }
 }
 
 function saveCourses(courses) {
-  try { localStorage.setItem(COURSES_KEY, JSON.stringify(courses)); } catch(e) {}
+  storeSet(COURSES_KEY, JSON.stringify(courses));
 }
 
 // Populate course selector on setup screen
@@ -1955,16 +2014,16 @@ function closeCourseLibrary() {
 const SAVE_KEY = 'wolf_round_save';
 
 function saveGame() {
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(G)); } catch(e) {}
+  storeSet(SAVE_KEY, JSON.stringify(G));
 }
 
 function clearSave() {
-  try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
+  storeRemove(SAVE_KEY);
 }
 
 function loadSave() {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
+    const raw = storeGet(SAVE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch(e) { return null; }
 }
@@ -1991,6 +2050,9 @@ function discardSave() {
 
 // ===================== INIT =====================
 updateSetup();
+
+// Test storage immediately so warning shows on load if broken
+testStorage();
 
 // Set default date to today
 document.getElementById('cfg-date').value = new Date().toISOString().slice(0,10);
