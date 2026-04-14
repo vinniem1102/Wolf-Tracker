@@ -361,6 +361,61 @@
   }
   .course-item:last-child { border-bottom: none; }
 
+  /* Scorecard */
+  .sc-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -1rem; padding: 0 1rem; }
+  .sc-table { border-collapse: collapse; white-space: nowrap; font-size: 12px; min-width: 100%; }
+  .sc-table td, .sc-table th {
+    padding: 3px 5px; border: 1px solid var(--border);
+    text-align: center; min-width: 28px; height: 24px;
+  }
+  .sc-table .sc-label {
+    text-align: left; font-size: 11px; color: var(--muted);
+    padding-left: 8px; min-width: 90px; max-width: 90px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    position: sticky; left: 0; background: var(--bg); z-index: 2;
+  }
+  .sc-table .sc-player-label {
+    text-align: left; font-size: 12px; font-weight: 500; color: var(--text);
+    padding-left: 8px; min-width: 90px; max-width: 90px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    position: sticky; left: 0; background: var(--bg); z-index: 2;
+  }
+  .sc-table .sc-header {
+    font-size: 11px; font-weight: 500; color: var(--muted);
+    background: var(--surface2); position: sticky; top: 0; z-index: 3;
+  }
+  .sc-table .sc-header.sc-label { z-index: 4; background: var(--surface2); }
+  .sc-subtotal { background: var(--surface2); font-weight: 500; }
+  .sc-wolf-row td { background: var(--surface); }
+  .sc-money-row td { background: var(--surface); font-family: 'DM Mono', monospace; font-size: 11px; }
+  .sc-score-row td { background: var(--surface); }
+  .sc-section-head td { background: var(--surface2); }
+  .sc-wolf-cell {
+    font-size: 10px; font-weight: 600; color: #7a5208;
+    background: #fdf3d0; display: block;
+    border-radius: 3px; padding: 1px 3px;
+  }
+  .sc-partner-cell {
+    font-size: 10px; font-weight: 600; color: #1a5e2a;
+    background: #d4f0da; display: block;
+    border-radius: 3px; padding: 1px 3px;
+  }
+  .sc-solo-cell {
+    font-size: 10px; font-weight: 600; color: #8a1a1a;
+    background: #fdecea; display: block;
+    border-radius: 3px; padding: 1px 3px;
+  }
+  .sc-push-cell { color: var(--muted); }
+  .sc-pos { color: var(--green); }
+  .sc-neg { color: var(--red); }
+  .sc-score-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--gold); vertical-align: super; margin-left: 1px; }
+  @media (prefers-color-scheme: light) {
+    .sc-table .sc-label, .sc-table .sc-player-label { background: var(--bg); }
+    .sc-table .sc-header { background: var(--surface2); }
+    .sc-table .sc-header.sc-label { background: var(--surface2); }
+  }
+
   /* Animations */
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   .screen.active { animation: fadeIn 0.2s ease; }
@@ -744,12 +799,33 @@
 </div>
 
 <!-- NAV BAR -->
+<!-- ===== SCREEN: SCORECARD ===== -->
+<div id="screen-scorecard" class="screen">
+  <div class="app-header">
+    <div class="wolf-icon">🐺</div>
+    <div>
+      <div class="app-title">Scorecard</div>
+      <div class="app-sub" id="sc-sub">Hole by hole summary</div>
+    </div>
+  </div>
+  <div class="sc-wrap">
+    <div id="sc-container"></div>
+  </div>
+  <div style="margin-top:14px;font-size:11px;color:var(--muted);padding:0 4px">
+    <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gold);vertical-align:middle;margin-right:4px"></span>dot = handicap stroke &nbsp;·&nbsp;
+    🐺 Wolf &nbsp;·&nbsp; <span style="color:var(--partner-color)">P</span> Partner &nbsp;·&nbsp; <span style="color:var(--red)">★</span> Solo
+  </div>
+</div>
+
 <nav class="nav-bar" id="main-nav" style="display:none">
   <button class="nav-item active" id="nav-hole" onclick="showScreen('screen-hole')">
     <span class="nav-icon">⛳</span>Hole
   </button>
   <button class="nav-item" id="nav-scores" onclick="showScreen('screen-scores');renderScoreboard()">
     <span class="nav-icon">📋</span>Scores
+  </button>
+  <button class="nav-item" id="nav-scorecard" onclick="showScreen('screen-scorecard');renderScorecard()">
+    <span class="nav-icon">📊</span>Card
   </button>
   <button class="nav-item" id="nav-courses" onclick="showScreen('screen-courses');renderCourseLibrary()">
     <span class="nav-icon">🏌</span>Courses
@@ -1307,20 +1383,20 @@ function renderScoreInputs() {
 
 // ===================== CALCULATE =====================
 function calculateHole() {
-  const calcBtn = document.getElementById('calc-result-btn');
-  if (calcBtn) { calcBtn.disabled = true; calcBtn.textContent = 'Calculated ✓'; calcBtn.style.opacity = '0.5'; }
-  // Lock all score inputs so scores can't be changed after calculation
-  for (let _i = 0; _i < G.numPlayers; _i++) {
-    const inp = document.getElementById('score-input-' + _i);
-    if (inp) { inp.disabled = true; inp.style.opacity = '0.5'; }
-  }
-  // Validate scores
+  // Validate FIRST before disabling anything
   for (let i = 0; i < G.numPlayers; i++) {
     const v = parseInt(document.getElementById(`score-input-${i}`)?.value || '');
     if (!v || isNaN(v) || v < 1) { alert(`Enter a score for ${G.players[i]}`); return; }
     holeState.scores[i] = v;
   }
   if (!holeState.mode) { alert('Select Wolf decision (Lone Wolf or Picks N)'); return; }
+  // All valid — now lock inputs and button
+  const calcBtn = document.getElementById('calc-result-btn');
+  if (calcBtn) { calcBtn.disabled = true; calcBtn.textContent = 'Calculated ✓'; calcBtn.style.opacity = '0.5'; }
+  for (let _i = 0; _i < G.numPlayers; _i++) {
+    const inp = document.getElementById('score-input-' + _i);
+    if (inp) { inp.disabled = true; inp.style.opacity = '0.5'; }
+  }
 
   const n = G.numPlayers;
   const wolfIdx = holeState.wolfIdx;
@@ -1922,6 +1998,7 @@ function showScreen(id) {
   if (id === 'screen-hole') document.getElementById('nav-hole').classList.add('active');
   if (id === 'screen-scores') document.getElementById('nav-scores').classList.add('active');
   if (id === 'screen-courses') { const nc = document.getElementById('nav-courses'); if(nc) nc.classList.add('active'); }
+  if (id === 'screen-scorecard') { const ns = document.getElementById('nav-scorecard'); if(ns) ns.classList.add('active'); }
 }
 
 function newGame() {
@@ -2257,6 +2334,166 @@ function resumeGame() {
 function discardSave() {
   clearSave();
   document.getElementById('resume-banner').style.display = 'none';
+}
+
+// ===================== SCORECARD =====================
+function renderScorecard() {
+  const n = G.numPlayers;
+  const holesPlayed = G.scores.length;
+  document.getElementById('sc-sub').textContent =
+    (G.course || 'Round') + (G.date ? ' · ' + new Date(G.date+'T12:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}) : '');
+
+  // Build hole lookup by hole number
+  const byHole = {};
+  G.scores.forEach(s => { byHole[s.hole] = s; });
+
+  // Running totals per player — recalculate from log
+  const runningTotals = new Array(n).fill(0);
+
+  // Helper: cell background for wolf/partner/solo on a hole
+  function roleChar(s, pidx) {
+    if (!s) return '';
+    if (s.mode === 'solo') {
+      if (pidx === s.soloIdx) return '<span class="sc-solo-cell">★</span>';
+      return '';
+    }
+    const wolfTeam = [s.wolfIdx, ...s.partnerIdxs];
+    if (pidx === s.wolfIdx) return '<span class="sc-wolf-cell">🐺</span>';
+    if (s.partnerIdxs.includes(pidx)) return '<span class="sc-partner-cell">P</span>';
+    return '';
+  }
+
+  // Column definitions: holes 1-9, Out, holes 10-18, In, Total
+  const frontHoles = [1,2,3,4,5,6,7,8,9];
+  const backHoles  = [10,11,12,13,14,15,16,17,18];
+
+  let html = '<table class="sc-table">';
+
+  // ── Header row: Out / In labels ──────────────────────────────────────
+  html += '<thead>';
+  html += '<tr>';
+  html += '<th class="sc-label sc-header"></th>';
+  frontHoles.forEach(() => html += '<th class="sc-header"></th>');
+  html += '<th class="sc-header sc-subtotal">Out</th>';
+  backHoles.forEach(() => html += '<th class="sc-header"></th>');
+  html += '<th class="sc-header sc-subtotal">In</th>';
+  html += '<th class="sc-header sc-subtotal">Tot</th>';
+  html += '</tr>';
+
+  // ── Hole numbers ─────────────────────────────────────────────────────
+  html += '<tr>';
+  html += '<td class="sc-label sc-header">Hole</td>';
+  frontHoles.forEach(h => html += '<td class="sc-header">' + h + '</td>');
+  html += '<td class="sc-header sc-subtotal"></td>';
+  backHoles.forEach(h => html += '<td class="sc-header">' + h + '</td>');
+  html += '<td class="sc-header sc-subtotal"></td>';
+  html += '<td class="sc-header sc-subtotal"></td>';
+  html += '</tr>';
+  html += '</thead>';
+
+  // ── Stake & Doubles rows ─────────────────────────────────────────────
+  html += '<tbody>';
+  html += '<tr class="sc-section-head">';
+  html += '<td class="sc-label">Stake</td>';
+  let stakeOut = 0, stakeIn = 0;
+  [...frontHoles, ...backHoles].forEach((h, idx) => {
+    const s = byHole[h];
+    const stake = s ? s.totalPts : '';
+    const cls = h === 10 ? ' sc-subtotal' : '';
+    if (idx === 9) html += '<td class="sc-subtotal"></td>';
+    html += '<td class="sc-wolf-row' + cls + '">' + (stake !== '' ? '$' + stake : '') + '</td>';
+    if (idx < 9) stakeOut += (stake || 0);
+    else stakeIn += (stake || 0);
+  });
+  html += '<td class="sc-subtotal"></td><td class="sc-subtotal"></td></tr>';
+
+  html += '<tr class="sc-section-head">';
+  html += '<td class="sc-label">Doubles</td>';
+  [...frontHoles, ...backHoles].forEach((h, idx) => {
+    const s = byHole[h];
+    const d = s && s.holeDoubles > 0 ? s.holeDoubles : '';
+    if (idx === 9) html += '<td class="sc-subtotal"></td>';
+    html += '<td>' + d + '</td>';
+  });
+  html += '<td class="sc-subtotal"></td><td class="sc-subtotal"></td></tr>';
+
+  // ── Player rows ───────────────────────────────────────────────────────
+  // Reset running totals
+  const playerTotals = new Array(n).fill(0);
+  // Precompute running totals hole by hole
+  // Build per-player running total after each hole
+  const runByHole = {}; // runByHole[hole][pidx] = running total after that hole
+  let pts = new Array(n).fill(0);
+  G.scores.forEach(s => {
+    s.deltas.forEach((d, pi) => pts[pi] += d);
+    runByHole[s.hole] = [...pts];
+  });
+
+  for (let pidx = 0; pidx < n; pidx++) {
+    const pName = G.players[pidx];
+
+    // Player name row — shows role indicators
+    html += '<tr class="sc-wolf-row">';
+    html += '<td class="sc-player-label">' + pName + '</td>';
+    let roleOut = '', roleIn = '';
+    [...frontHoles, ...backHoles].forEach((h, idx) => {
+      const s = byHole[h];
+      const role = roleChar(s, pidx);
+      if (idx === 9) html += '<td class="sc-subtotal"></td>';
+      html += '<td>' + role + '</td>';
+    });
+    html += '<td class="sc-subtotal"></td><td class="sc-subtotal"></td></tr>';
+
+    // Score row
+    html += '<tr class="sc-score-row">';
+    html += '<td class="sc-label" style="font-size:10px;color:var(--muted);padding-left:16px">Score</td>';
+    let outScore = 0, inScore = 0, hasOut = false, hasIn = false;
+    [...frontHoles, ...backHoles].forEach((h, idx) => {
+      const s = byHole[h];
+      if (idx === 9) {
+        html += '<td class="sc-subtotal">' + (hasOut ? outScore : '') + '</td>';
+      }
+      if (!s || !s.grossScores) { html += '<td></td>'; return; }
+      const gross = s.grossScores[pidx];
+      const strokes = strokesOnHole(pidx, h);
+      const dotHtml = strokes > 0
+        ? Array(strokes).fill('<span class="sc-score-dot"></span>').join('')
+        : '';
+      html += '<td>' + gross + dotHtml + '</td>';
+      if (idx < 9) { outScore += gross; hasOut = true; }
+      else { inScore += gross; hasIn = true; }
+    });
+    const totScore = (hasOut ? outScore : 0) + (hasIn ? inScore : 0);
+    html += '<td class="sc-subtotal">' + (hasIn ? inScore : '') + '</td>';
+    html += '<td class="sc-subtotal">' + (hasOut || hasIn ? totScore : '') + '</td>';
+    html += '</tr>';
+
+    // Wolf $ running total row
+    html += '<tr class="sc-money-row">';
+    html += '<td class="sc-label" style="font-size:10px;color:var(--muted);padding-left:16px">Wolf $</td>';
+    [...frontHoles, ...backHoles].forEach((h, idx) => {
+      const s = byHole[h];
+      if (idx === 9) html += '<td class="sc-subtotal"></td>';
+      if (!s) { html += '<td></td>'; return; }
+      if (s.result === 'push') { html += '<td class="sc-push-cell">—</td>'; return; }
+      const rt = runByHole[h] ? runByHole[h][pidx] : 0;
+      const sign = rt > 0 ? '+' : '';
+      const cls = rt > 0 ? 'sc-pos' : rt < 0 ? 'sc-neg' : '';
+      html += '<td class="' + cls + '">' + sign + '$' + rt + '</td>';
+    });
+    html += '<td class="sc-subtotal"></td><td class="sc-subtotal"></td></tr>';
+
+    // Spacer between players
+    if (pidx < n - 1) {
+      const totalCols = 18 + 3 + 1;
+      html += '<tr style="height:4px"><td class="sc-label" style="background:var(--border)"></td>';
+      for (let c = 0; c < totalCols - 1; c++) html += '<td style="background:var(--border)"></td>';
+      html += '</tr>';
+    }
+  }
+
+  html += '</tbody></table>';
+  document.getElementById('sc-container').innerHTML = html;
 }
 
 // ===================== INIT =====================
