@@ -102,7 +102,7 @@
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.15s;
   }
@@ -111,7 +111,7 @@
     background: var(--gold);
     color: #111;
     border-color: var(--gold);
-    font-weight: 500;
+    font-weight: 700;
   }
   .btn-primary:hover { background: #d4b060; color: #111; border-color: #d4b060; }
   .btn-sm { padding: 6px 14px; font-size: 13px; }
@@ -158,14 +158,14 @@
   .hole-num-display { font-size: 52px; color: var(--gold); line-height: 1; }
   .hole-info { text-align: right; }
   .hole-info-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
-  .hole-info-val { font-size: 16px; font-weight: 500; margin-top: 2px; }
+  .hole-info-val { font-size: 16px; font-weight: 700; margin-top: 2px; }
   .hole-points-badge {
     display: inline-flex; align-items: center; gap: 6px;
     background: var(--gold-dim);
     color: var(--gold);
     border-radius: 20px;
     padding: 3px 12px;
-    font-size: 12px; font-weight: 500;
+    font-size: 12px; font-weight: 700;
     margin-top: 6px;
   }
   .carryover-badge {
@@ -174,7 +174,7 @@
     color: #e8a020;
     border-radius: 20px;
     padding: 3px 12px;
-    font-size: 12px; font-weight: 500;
+    font-size: 12px; font-weight: 700;
     margin-top: 6px; margin-left: 6px;
   }
 
@@ -201,7 +201,7 @@
   }
   .tee-card.is-wolf .tee-num { border-color: var(--wolf-color); color: var(--wolf-color); }
   .tee-card.is-partner .tee-num { border-color: var(--partner-color); color: var(--partner-color); }
-  .tee-name { flex: 1; font-weight: 500; }
+  .tee-name { flex: 1; font-weight: 700; font-size: 15px; }
   .tee-standing {
     font-family: 'DM Mono', monospace;
     font-size: 13px;
@@ -209,14 +209,14 @@
   }
   .role-badge {
     font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
-    padding: 2px 8px; border-radius: 20px; font-weight: 500;
+    padding: 2px 8px; border-radius: 20px; font-weight: 700;
   }
   .role-wolf { background: #2a2000; color: var(--gold); border: 1px solid var(--gold-dim); }
   .role-partner { background: #0d1a12; color: #3db370; border: 1px solid #235c38; }
   .role-pick { background: transparent; color: var(--muted); border: 1px dashed var(--border); cursor: pointer; transition: all 0.15s; }
   .role-pick:hover { border-color: var(--partner-color); color: #3db370; }
   .score-input-wrap { display: flex; align-items: center; gap: 8px; }
-  .score-input { width: 48px; text-align: center; padding: 5px 4px; font-size:16px; font-weight:500; }
+  .score-input { width: 48px; text-align: center; padding: 5px 4px; font-size:17px; font-weight:700; }
   /* Hide number input spinners across browsers */
   .score-input::-webkit-outer-spin-button,
   .score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -232,11 +232,12 @@
     color: var(--muted);
     font-family: 'DM Sans', sans-serif;
     font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.15s;
   }
   .mode-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
-  .mode-btn.active { background: var(--gold); color: #111; border-color: var(--gold); font-weight: 500; }
+  .mode-btn.active { background: var(--gold); color: #111; border-color: var(--gold); font-weight: 700; }
 
   /* Scoreboard */
   .score-table { width: 100%; border-collapse: collapse; }
@@ -251,11 +252,12 @@
     text-align: right;
     font-family: 'DM Mono', monospace;
     font-size: 14px;
+    font-weight: 700;
   }
   .score-table tr:last-child td { border-bottom: none; }
   .positive { color: var(--green); }
   .negative { color: var(--red); }
-  .player-name-cell { font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .player-name-cell { font-weight: 700; display: flex; align-items: center; gap: 8px; }
   .wolf-dot {
     width: 8px; height: 8px; border-radius: 50%;
     background: var(--gold); display: inline-block;
@@ -269,7 +271,7 @@
   }
   .ledger-row:last-child { border-bottom: none; }
   .ledger-arrow { color: var(--gold); font-size: 16px; }
-  .ledger-amt { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; color: var(--gold); margin-left: auto; }
+  .ledger-amt { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 700; color: var(--gold); margin-left: auto; }
 
   /* Result overlay */
   .result-banner {
@@ -281,7 +283,7 @@
   .result-banner.wolf-wins { background: #1a2e1a; border-color: var(--green); }
   .result-banner.opponents-win { background: #2e1a1a; border-color: var(--red); }
   .result-banner.push { background: #1e1e1a; border-color: var(--gold-dim); }
-  .result-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.04em; }
+  .result-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.04em; font-weight: 700; }
 
   /* Nav dots */
   .nav-bar {
@@ -317,7 +319,7 @@
   .text-gold { color: var(--gold); }
   .text-sm { font-size: 13px; }
   .text-xs { font-size: 11px; }
-  .bold { font-weight: 500; }
+  .bold { font-weight: 700; }
   .chip {
     display: inline-block;
     padding: 2px 10px;
@@ -338,7 +340,7 @@
   /* Course library */
   .tee-badge {
     display: inline-block; padding: 2px 10px; border-radius: 20px;
-    font-size: 11px; font-weight: 500; border: 1px solid;
+    font-size: 11px; font-weight: 700; border: 1px solid;
   }
   .hcp-grid {
     display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; margin-top: 8px;
@@ -352,9 +354,9 @@
   }
   .hcp-stroke-badge {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 20px; height: 20px; border-radius: 50%;
+    width: 22px; height: 22px; border-radius: 50%;
     background: var(--gold-dim); color: var(--gold);
-    font-size: 11px; font-weight: 500; font-family: 'DM Mono', monospace;
+    font-size: 12px; font-weight: 700; font-family: 'DM Mono', monospace;
     flex-shrink: 0;
   }
   .course-item {
@@ -377,33 +379,33 @@
     position: sticky; left: 0; background: var(--bg); z-index: 2;
   }
   .sc-table .sc-player-label {
-    text-align: left; font-size: 12px; font-weight: 500; color: var(--text);
+    text-align: left; font-size: 12px; font-weight: 700; color: var(--text);
     padding-left: 8px; min-width: 90px; max-width: 90px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     position: sticky; left: 0; background: var(--bg); z-index: 2;
   }
   .sc-table .sc-header {
-    font-size: 11px; font-weight: 500; color: var(--muted);
+    font-size: 11px; font-weight: 700; color: var(--muted);
     background: var(--surface2); position: sticky; top: 0; z-index: 3;
   }
   .sc-table .sc-header.sc-label { z-index: 4; background: var(--surface2); }
-  .sc-subtotal { background: var(--surface2); font-weight: 500; }
+  .sc-subtotal { background: var(--surface2); font-weight: 700; }
   .sc-wolf-row td { background: var(--surface); }
-  .sc-money-row td { background: var(--surface); font-family: 'DM Mono', monospace; font-size: 11px; }
-  .sc-score-row td { background: var(--surface); }
+  .sc-money-row td { background: var(--surface); font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 700; }
+  .sc-score-row td { background: var(--surface); font-weight: 700; font-size: 12px; }
   .sc-section-head td { background: var(--surface2); }
   .sc-wolf-cell {
-    font-size: 10px; font-weight: 600; color: #7a5208;
+    font-size: 10px; font-weight: 700; color: #7a5208;
     background: #fdf3d0; display: block;
     border-radius: 3px; padding: 1px 3px;
   }
   .sc-partner-cell {
-    font-size: 10px; font-weight: 600; color: #1a5e2a;
+    font-size: 10px; font-weight: 700; color: #1a5e2a;
     background: #d4f0da; display: block;
     border-radius: 3px; padding: 1px 3px;
   }
   .sc-solo-cell {
-    font-size: 10px; font-weight: 600; color: #8a1a1a;
+    font-size: 10px; font-weight: 700; color: #8a1a1a;
     background: #fdecea; display: block;
     border-radius: 3px; padding: 1px 3px;
   }
@@ -462,7 +464,7 @@
     .hcp-stroke-badge { background: #fdf3d0; color: #7a5208; }
     .positive { color: #1e6e3a; }
     .negative { color: var(--red); }
-    .mult-table td.highlight { color: var(--gold); font-weight: 600; }
+    .mult-table td.highlight { color: var(--gold); font-weight: 700; }
     .mult-table th, .mult-table td { border-color: var(--border); }
     .mult-table th { background: var(--surface2); color: var(--muted); }
     .tee-badge { border-color: var(--border); }
@@ -670,11 +672,11 @@
     <!-- Lone wolf buttons at top -->
     <div style="display:flex;gap:8px;margin-bottom:10px" id="lone-wolf-btns">
       <button class="btn btn-sm" id="btn-lone-tee" onclick="setLoneWolf('loneAfterTee')" style="flex:1;flex-direction:column;height:auto;padding:10px 8px;line-height:1.3">
-        <div style="font-size:13px;font-weight:500">🐺 Lone Wolf</div>
+        <div style="font-size:14px;font-weight:700">🐺 Lone Wolf</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px">after my tee shot</div>
       </button>
       <button class="btn btn-sm" id="btn-lone-all" onclick="setLoneWolf('loneAfterAll')" style="flex:1;flex-direction:column;height:auto;padding:10px 8px;line-height:1.3">
-        <div style="font-size:13px;font-weight:500">🐺 Lone Wolf</div>
+        <div style="font-size:14px;font-weight:700">🐺 Lone Wolf</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px">after all tee shots</div>
       </button>
     </div>
@@ -1092,7 +1094,7 @@ function renderTeeOrder() {
       card.innerHTML = `
         <div class="tee-name">${G.players[pidx]}</div>
         ${strokeBadge}
-        <div class="mono" style="font-size:12px;color:var(--muted);margin-left:auto">${ptsStr}</div>
+        <div class="mono" style="font-size:13px;font-weight:700;color:var(--muted);margin-left:auto">${ptsStr}</div>
         <span class="role-badge role-wolf">🐺 Wolf</span>
       `;
     } else {
@@ -1104,7 +1106,7 @@ function renderTeeOrder() {
       card.innerHTML = `
         <div class="tee-name" style="${isSolo?'color:#e74c3c;font-weight:600':''}">${G.players[pidx]}${isSolo?' ★':''}</div>
         ${strokeBadge}
-        <div class="mono" style="font-size:12px;color:var(--muted);margin-left:auto">${ptsStr}</div>
+        <div class="mono" style="font-size:13px;font-weight:700;color:var(--muted);margin-left:auto">${ptsStr}</div>
         <div style="display:flex;gap:5px;flex-shrink:0">
           <button onclick="togglePick(${pidx})"
             style="padding:5px 12px;border-radius:6px;border:1px solid;font-size:12px;font-weight:500;cursor:pointer;
@@ -1144,11 +1146,21 @@ function getMaxPartners() {
 function togglePick(pidx) {
   if (holeState.resultShown) return;
   if (holeState.partnerIdxs.includes(pidx)) {
-    // Un-pick
+    // Un-pick — revert to no mode if no partners left
     holeState.partnerIdxs = holeState.partnerIdxs.filter(i => i !== pidx);
+    if (holeState.partnerIdxs.length === 0) holeState.mode = null;
   } else {
     if (holeState.partnerIdxs.length < getMaxPartners()) {
       holeState.partnerIdxs.push(pidx);
+      // Picking a player always overrides lone wolf mode
+      const isLone = holeState.mode === 'loneAfterTee' || holeState.mode === 'loneAfterAll';
+      if (isLone) {
+        holeState.mode = null;
+        document.getElementById('btn-lone-tee').style.borderColor = 'var(--border)';
+        document.getElementById('btn-lone-tee').style.color = '';
+        document.getElementById('btn-lone-all').style.borderColor = 'var(--border)';
+        document.getElementById('btn-lone-all').style.color = '';
+      }
     }
   }
   renderTeeOrder();
@@ -1265,30 +1277,30 @@ function renderTeamSummary() {
 
   const teamBlock = isSolo
     ? `<div style="flex:1">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#e74c3c;margin-bottom:6px">Solo Player</div>
-        <div style="font-size:14px;font-weight:600;color:#e74c3c;padding:2px 0">★ ${G.players[holeState.soloIdx]}</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#e74c3c;margin-bottom:6px">Solo Player</div>
+        <div style="font-size:15px;font-weight:700;color:#e74c3c;padding:2px 0">★ ${G.players[holeState.soloIdx]}</div>
       </div>
       <div style="width:1px;background:var(--border)"></div>
       <div style="flex:1">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px">Everyone Else</div>
-        ${opponents.map(i=>`<div style="font-size:14px;color:var(--muted);padding:2px 0">${G.players[i]}</div>`).join('')}
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px">Everyone Else</div>
+        ${opponents.map(i=>`<div style="font-size:14px;font-weight:700;color:var(--muted);padding:2px 0">${G.players[i]}</div>`).join('')}
       </div>`
     : `<div style="flex:1">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px">Wolf Team</div>
-        ${wolfTeam.map(i=>`<div style="font-size:14px;font-weight:500;color:${i===holeState.wolfIdx?'var(--gold)':'#3db370'};padding:2px 0">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px">Wolf Team</div>
+        ${wolfTeam.map(i=>`<div style="font-size:14px;font-weight:700;color:${i===holeState.wolfIdx?'var(--gold)':'#3db370'};font-weight:700;padding:2px 0">
           ${i===holeState.wolfIdx?'🐺 ':''}${G.players[i]}
         </div>`).join('')}
       </div>
       <div style="width:1px;background:var(--border)"></div>
       <div style="flex:1">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px">Opponents</div>
-        ${opponents.map(i=>`<div style="font-size:14px;color:var(--muted);padding:2px 0">${G.players[i]}</div>`).join('')}
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px">Opponents</div>
+        ${opponents.map(i=>`<div style="font-size:14px;font-weight:700;color:var(--muted);padding:2px 0">${G.players[i]}</div>`).join('')}
       </div>`;
 
   const el2 = document.getElementById('confirmed-team-summary');
   el2.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <span style="font-size:13px;color:${isSolo?'#e74c3c':'var(--muted)'};">${modeLabel} · ${mult}×</span>
+      <span style="font-size:14px;font-weight:700;color:${isSolo?'#e74c3c':'var(--muted)'};">${modeLabel} · ${mult}×</span>
       <button class="btn btn-sm" onclick="resetPicking()" style="font-size:12px;padding:4px 10px">Edit</button>
     </div>
     <div style="display:flex;gap:16px;margin-bottom:14px">
@@ -1296,19 +1308,19 @@ function renderTeamSummary() {
     </div>
     <div style="border-top:1px solid var(--border);padding-top:12px;display:flex;align-items:center;gap:12px">
       <div style="flex:1">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:4px">Number of Doubles</div>
-        <div style="font-size:11px;color:var(--muted)">This hole only · not carried forward</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:4px">Number of Doubles</div>
+        <div style="font-size:11px;font-weight:600;color:var(--muted)">This hole only · not carried forward</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <button onclick="adjustHoleMult(-1)"
           style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-sans,sans-serif)">−</button>
-        <span id="hole-mult-display" style="font-size:22px;font-weight:500;color:var(--gold);font-family:'DM Mono',monospace;min-width:28px;text-align:center">${curDoubles}</span>
+        <span id="hole-mult-display" style="font-size:22px;font-weight:700;color:var(--gold);font-family:'DM Mono',monospace;min-width:28px;text-align:center">${curDoubles}</span>
         <button onclick="adjustHoleMult(1)"
           style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-sans,sans-serif)">+</button>
       </div>
       <div style="text-align:right;min-width:60px">
         <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Stake</div>
-        <div id="hole-stake-display" style="font-size:18px;font-weight:500;color:var(--gold);font-family:'DM Mono',monospace">$${effectiveStake.toFixed(0)}</div>
+        <div id="hole-stake-display" style="font-size:20px;font-weight:700;color:var(--gold);font-family:'DM Mono',monospace">$${effectiveStake.toFixed(0)}</div>
       </div>
     </div>
   `;
@@ -1531,8 +1543,8 @@ function showHoleResult(type, msg, deltas, wolfTeam, opponents, totalPts, mult) 
     + '<span style="flex:1;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Player</span>'
     + (showHcp ? '<span style="width:52px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)">Gross</span>'
                + '<span style="width:44px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)">Net</span>' : '')
-    + '<span style="width:66px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Hole $</span>'
-    + '<span style="width:66px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Total</span>'
+    + '<span style="width:66px;text-align:right;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Hole $</span>'
+    + '<span style="width:66px;text-align:right;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Total</span>'
     + '</div>';
 
   sortedIdxs.forEach(function(i) {
@@ -1554,13 +1566,13 @@ function showHoleResult(type, msg, deltas, wolfTeam, opponents, totalPts, mult) 
     const tVal = tsign + '$' + Math.abs(total).toFixed(0);
     const strokeDot = strokes > 0 ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold);margin-left:3px;vertical-align:middle"></span>' : '';
     deltaRows += '<div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">'
-      + '<span style="flex:1;font-size:14px;font-weight:500;' + nameColor + '">' + wolfIcon + G.players[i] + '</span>'
+      + '<span style="flex:1;font-size:14px;font-weight:700;' + nameColor + '">' + wolfIcon + G.players[i] + '</span>'
       + (showHcp
           ? '<span class="mono" style="width:52px;text-align:right;font-size:13px;color:var(--muted)">' + gross + strokeDot + '</span>'
           + '<span class="mono" style="width:44px;text-align:right;font-size:13px;color:var(--text)">' + net + '</span>'
           : '')
-      + '<span class="mono" style="width:66px;text-align:right;font-size:14px;' + dcls + '">' + dVal + '</span>'
-      + '<span class="mono" style="width:66px;text-align:right;font-size:15px;font-weight:500;' + tcls + '">' + tVal + '</span>'
+      + '<span class="mono" style="width:66px;text-align:right;font-size:14px;font-weight:700;' + dcls + '">' + dVal + '</span>'
+      + '<span class="mono" style="width:66px;text-align:right;font-size:15px;font-weight:700;' + tcls + '">' + tVal + '</span>'
       + '</div>';
   });
 
@@ -1617,8 +1629,8 @@ function renderScoreboard() {
     const isWolf = !G.gameOver && i === ((h-1) % n) && h <= G.wolfHole;
     tbody.innerHTML += `<tr>
       <td><div class="player-name-cell">${isWolf?'<span class="wolf-dot"></span>':''} ${G.players[i]}</div></td>
-      <td class="${ptsCls}">${sign}$${pts.toFixed(1)}</td>
-      <td class="${dCls}">${d!==0?dsign+'$'+Math.abs(d).toFixed(1):'—'}</td>
+      <td class="${ptsCls}">${sign}$${Math.round(pts)}</td>
+      <td class="${dCls}">${d!==0?dsign+'$'+Math.round(Math.abs(d)):'—'}</td>
     </tr>`;
   });
 
@@ -1766,6 +1778,8 @@ function replayFromHole(si) {
 
 // Enter edit mode for hole at log index si
 function startEditHole(si) {
+  // Close any existing overlay first to avoid duplicate IDs
+  closeEditOverlay();
   const s = G.scores[si];
   // Build an edit modal overlay
   const n = G.numPlayers;
@@ -1794,7 +1808,7 @@ function startEditHole(si) {
       <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="2" value="${(s.grossScores||[])[i]||''}"
         id="edit-score-${i}" style="width:52px;text-align:center;padding:5px 4px;
         background:var(--surface2);border:1px solid var(--border);border-radius:6px;
-        color:var(--text);font-size:16px;font-weight:500;font-family:var(--font-sans,sans-serif)">
+        color:var(--text);font-size:16px;font-weight:700;font-family:var(--font-sans,sans-serif)">
     </div>`;
   }
 
@@ -1808,10 +1822,10 @@ function startEditHole(si) {
         <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Hole Point Value</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px">Wolf hole — manual entry</div>
       </div>
-      <input type="number" id="edit-basepts" min="1" max="99" value="${s.basePts}"
+      <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="3" id="edit-basepts" value="${s.basePts}"
         style="width:70px;text-align:center;padding:6px 4px;background:var(--surface2);
         border:1px solid var(--border);border-radius:6px;color:var(--gold);
-        font-size:18px;font-weight:500;font-family:'DM Mono',monospace">
+        font-size:18px;font-weight:700;font-family:'DM Mono',monospace">
     </div>` : '';
 
   const overlay = document.createElement('div');
@@ -1820,13 +1834,13 @@ function startEditHole(si) {
   overlay.innerHTML = `
     <div style="max-width:500px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border)">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold)">Edit Hole ${s.hole}${isWolfHole?' <span style="font-size:13px;color:var(--gold-dim)">Wolf Hole</span>':''}</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;font-weight:700;color:var(--gold)">Edit Hole ${s.hole}${isWolfHole?' <span style="font-size:13px;color:var(--gold-dim)">Wolf Hole</span>':''}</div>
         <button onclick="closeEditOverlay()" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);padding:4px 10px;cursor:pointer;font-family:var(--font-sans,sans-serif)">✕ Cancel</button>
       </div>
 
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
         Wolf: <strong style="color:var(--gold)">${G.players[s.wolfIdx]}</strong> ·
-        ${modeLabel} · ${mult}× ·
+        <strong>${modeLabel} · ${mult}×</strong> ·
         <span style="color:var(--muted)">Team: ${wolfTeam.map(i=>G.players[i]).join(', ')} vs ${opponents.map(i=>G.players[i]).join(', ')}</span>
       </div>
 
@@ -1841,7 +1855,7 @@ function startEditHole(si) {
         </div>
         <button onclick="adjustEditMult(-1)"
           style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:18px;cursor:pointer;font-family:var(--font-sans,sans-serif)">−</button>
-        <span id="edit-mult-display" style="font-size:22px;font-weight:500;color:var(--gold);font-family:'DM Mono',monospace;min-width:28px;text-align:center">${curMult}</span>
+        <span id="edit-mult-display" style="font-size:22px;font-weight:700;color:var(--gold);font-family:'DM Mono',monospace;min-width:28px;text-align:center">${curMult}</span>
         <button onclick="adjustEditMult(1)"
           style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:18px;cursor:pointer;font-family:var(--font-sans,sans-serif)">+</button>
       </div>
@@ -1873,34 +1887,50 @@ function closeEditOverlay() {
 
 function saveEditHole(si) {
   const n = G.numPlayers;
-  // Validate scores
+  const overlay = document.getElementById('edit-overlay');
+  if (!overlay) { alert('Edit overlay not found — please try again.'); return; }
+
+  // Validate scores using overlay-scoped querySelector
   for (let i = 0; i < n; i++) {
-    const v = parseInt(document.getElementById('edit-score-' + i)?.value);
+    const inp = overlay.querySelector('#edit-score-' + i);
+    const v = parseInt(inp?.value || '');
     if (isNaN(v) || v < 1) { alert('Enter a valid score for ' + G.players[i]); return; }
   }
-  // Update the stored score record
-  const overlay = document.getElementById('edit-overlay');
+
+  // Read doubles from dataset (set by adjustEditMult)
   const newMult = parseInt(overlay.dataset.mult || 0);
+
+  // Read gross scores from overlay-scoped inputs
   const newGrossScores = [];
   for (let i = 0; i < n; i++) {
-    newGrossScores.push(parseInt(document.getElementById('edit-score-' + i).value));
+    const inp = overlay.querySelector('#edit-score-' + i);
+    newGrossScores.push(parseInt(inp.value));
   }
+
   G.scores[si].grossScores = newGrossScores;
   G.scores[si].holeDoubles = newMult;
-  // Wolf hole — update base points if field present
-  const editBasePts = document.getElementById('edit-basepts');
-  if (editBasePts) G.scores[si].basePts = parseInt(editBasePts.value) || G.scores[si].basePts;
+
+  // Wolf hole — read basePts from overlay-scoped querySelector
+  const editBasePts = overlay.querySelector('#edit-basepts');
+  if (editBasePts) {
+    const newBasePts = parseInt(editBasePts.value);
+    if (!isNaN(newBasePts) && newBasePts > 0) G.scores[si].basePts = newBasePts;
+  }
 
   // Replay from this hole forward to rebuild all deltas + running totals
   replayFromHole(si);
   saveGame();
   closeEditOverlay();
 
-  // Re-render hole screen so banner, carryover and result totals are current
-  refreshHoleScreenAfterEdit();
+  // Only refresh hole screen if game is still in progress
+  if (!G.gameOver) refreshHoleScreenAfterEdit();
 
-  // Return to scoreboard, refreshed
+  // Return to scoreboard, refreshed (re-renders ledger too if gameOver)
   renderScoreboard();
+  // Refresh scorecard data too so Card tab is in sync
+  if (typeof renderScorecard === 'function') {
+    try { renderScorecard(); } catch(e) {}
+  }
   showScreen('screen-scores');
 }
 
