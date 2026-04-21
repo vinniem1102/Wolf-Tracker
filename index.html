@@ -1450,50 +1450,59 @@ function calculateHole() {
   const deltas = new Array(n).fill(0);
   let resultType, resultMsg;
 
-  // Distribute pot in whole dollars. Floor everyone, then randomly give $1 to
-  // as many winners as needed to account for the remainder (one extra per winner max).
-  function distributeExact(pot, winners, favorFirst) {
-    const baseFloor = Math.floor(pot / winners.length); // whole dollars
-    let remainderDollars = Math.round(pot - baseFloor * winners.length);
-    winners.forEach(i => deltas[i] = baseFloor);
-    const pool = [...winners];
-    const shuffleFrom = favorFirst ? 1 : 0;
-    for (let i = pool.length - 1; i > shuffleFrom; i--) {
-      const j = shuffleFrom + Math.floor(Math.random() * (i - shuffleFrom + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
+  // Payout rule:
+  // Wolf wins (always): each opp pays stake; wolf splits n_opp × stake.
+  // Wolf loses, wolf <= opp: each opp receives stake; wolf splits n_opp × stake as payments.
+  // Wolf loses, wolf > opp:  each wolf pays stake; opps split n_wolf × stake.
+  function payoutHole(wolfTeamArr, oppArr, wolfWins) {
+    function splitPot(pot, recipients, sign) {
+      // recipients each get floor(pot/n) with remainder distributed randomly
+      const base = Math.floor(pot / recipients.length);
+      let rem = Math.round(pot - base * recipients.length);
+      recipients.forEach(i => deltas[i] = sign * base);
+      const pool = [...recipients];
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      for (let i = 0; i < pool.length && rem > 0; i++) {
+        deltas[pool[i]] += sign;
+        rem--;
+      }
     }
-    for (let i = 0; i < pool.length && remainderDollars > 0; i++) {
-      deltas[pool[i]] += 1;
-      remainderDollars--;
+
+    if (wolfWins) {
+      // Each opp pays stake; wolf splits n_opp × stake
+      oppArr.forEach(i => deltas[i] = -totalPts);
+      splitPot(oppArr.length * totalPts, wolfTeamArr, 1);
+    } else if (wolfTeamArr.length <= oppArr.length) {
+      // Wolf outnumbered or equal: each opp receives stake; wolf splits n_opp × stake
+      oppArr.forEach(i => deltas[i] = totalPts);
+      splitPot(oppArr.length * totalPts, wolfTeamArr, -1);
+    } else {
+      // Wolf outnumbers opponents: each wolf pays stake; opps split n_wolf × stake
+      wolfTeamArr.forEach(i => deltas[i] = -totalPts);
+      splitPot(wolfTeamArr.length * totalPts, oppArr, 1);
     }
   }
 
   if (wolfTeamBest === oppBest) {
-    // Push / carryover — solo push carries base stake only (not multiplied)
     resultType = 'push';
     resultMsg = isSolo ? 'Push — base stake carries to next hole' : 'Push — points carry to next hole';
     if (!holeState.isWolfHole) G.carryover += basePts;
   } else if (wolfTeamBest < oppBest) {
-    // Solo / Wolf team wins
-    const pot = opponents.length * totalPts;
-    distributeExact(pot, soloTeam, !isSolo); // Solo: random; Wolf: Wolf first
-    opponents.forEach(i => deltas[i] = -totalPts);
+    payoutHole(soloTeam, opponents, true);
     resultType = isSolo ? 'solo-wins' : 'wolf-wins';
     resultMsg = isSolo ? `${G.players[soloIdx]} Wins Solo!` : 'Wolf Team Wins!';
     G.carryover = 0;
   } else {
     if (isSolo) {
-      // Solo loss: solo player pays each opponent the full stake
-      // Each opponent receives totalPts individually (not split)
-      opponents.forEach(i => deltas[i] = totalPts);
-      deltas[soloIdx] = -(opponents.length * totalPts);
+      // Solo treat solo player as wolf team of 1
+      payoutHole([soloIdx], opponents, false);
       resultType = 'solo-lost';
       resultMsg = `${G.players[soloIdx]} Solo Failed!`;
     } else {
-      // Opponents win — each wolf team member pays totalPts; pot split among opponents
-      const pot = wolfTeam.length * totalPts;
-      distributeExact(pot, opponents, false);
-      wolfTeam.forEach(i => deltas[i] = -totalPts);
+      payoutHole(wolfTeam, opponents, false);
       resultType = 'opponents-win';
       resultMsg = 'Opponents Win!';
     }
@@ -1709,19 +1718,39 @@ function computeHolePayout(s, carryoverIn) {
   const deltas = new Array(n).fill(0);
   let result, carryoverOut = 0;
 
-  function distributeExact(pot, winners, favorFirst) {
-    const baseFloor = Math.floor(pot / winners.length);
-    let remainderDollars = Math.round(pot - baseFloor * winners.length);
-    winners.forEach(i => deltas[i] = baseFloor);
-    const pool = [...winners];
-    const shuffleFrom = favorFirst ? 1 : 0;
-    for (let i = pool.length - 1; i > shuffleFrom; i--) {
-      const j = shuffleFrom + Math.floor(Math.random() * (i - shuffleFrom + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
+  // Payout rule:
+  // Wolf wins (always): each opp pays stake; wolf splits n_opp × stake.
+  // Wolf loses, wolf <= opp: each opp receives stake; wolf splits n_opp × stake as payments.
+  // Wolf loses, wolf > opp:  each wolf pays stake; opps split n_wolf × stake.
+  function payoutHole(wolfTeamArr, oppArr, wolfWins) {
+    function splitPot(pot, recipients, sign) {
+      // recipients each get floor(pot/n) with remainder distributed randomly
+      const base = Math.floor(pot / recipients.length);
+      let rem = Math.round(pot - base * recipients.length);
+      recipients.forEach(i => deltas[i] = sign * base);
+      const pool = [...recipients];
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      for (let i = 0; i < pool.length && rem > 0; i++) {
+        deltas[pool[i]] += sign;
+        rem--;
+      }
     }
-    for (let i = 0; i < pool.length && remainderDollars > 0; i++) {
-      deltas[pool[i]] += 1;
-      remainderDollars--;
+
+    if (wolfWins) {
+      // Each opp pays stake; wolf splits n_opp × stake
+      oppArr.forEach(i => deltas[i] = -totalPts);
+      splitPot(oppArr.length * totalPts, wolfTeamArr, 1);
+    } else if (wolfTeamArr.length <= oppArr.length) {
+      // Wolf outnumbered or equal: each opp receives stake; wolf splits n_opp × stake
+      oppArr.forEach(i => deltas[i] = totalPts);
+      splitPot(oppArr.length * totalPts, wolfTeamArr, -1);
+    } else {
+      // Wolf outnumbers opponents: each wolf pays stake; opps split n_wolf × stake
+      wolfTeamArr.forEach(i => deltas[i] = -totalPts);
+      splitPot(wolfTeamArr.length * totalPts, oppArr, 1);
     }
   }
 
@@ -1729,19 +1758,14 @@ function computeHolePayout(s, carryoverIn) {
     result = 'push';
     carryoverOut = isWolfHole ? 0 : carryoverIn + s.basePts;
   } else if (sideBest < oppBest) {
-    const pot = opponents.length * totalPts;
-    distributeExact(pot, soloTeam, !isSolo);
-    opponents.forEach(i => deltas[i] = -totalPts);
+    payoutHole(soloTeam, opponents, true);
     result = isSolo ? 'solo-wins' : 'wolf-wins';
   } else {
     if (isSolo) {
-      opponents.forEach(i => deltas[i] = totalPts);
-      deltas[soloIdx] = -(opponents.length * totalPts);
+      payoutHole([soloIdx], opponents, false);
       result = 'solo-lost';
     } else {
-      const pot = soloTeam.length * totalPts;
-      distributeExact(pot, opponents, false);
-      soloTeam.forEach(i => deltas[i] = -totalPts);
+      payoutHole(soloTeam, opponents, false);
       result = 'opponents-win';
     }
   }
