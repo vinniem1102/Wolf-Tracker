@@ -598,8 +598,8 @@
       </thead>
       <tbody>
         <tr>
-          <td class="label-cell">Lowest Player as Wolf hole</td>
-          <td><input type="number" id="cfg-wolf-hole" min="15" max="18" value="17" style="width:70px;text-align:center"></td>
+          <td class="label-cell">The Wolf Hole Begins</td>
+          <td><input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="2" id="cfg-wolf-hole" value="17" style="width:70px;text-align:center"></td>
         </tr>
         <tr>
           <td class="label-cell">Points · Holes 1–8</td>
@@ -616,9 +616,18 @@
     </div>
   </div>
 
-  <div class="section-label">Point Multiplier Reference</div>
-  <div class="card">
-    <table class="mult-table" id="mult-ref-table"></table>
+  <div class="section-label">Point Multipliers <span class="chip">editable</span></div>
+  <div class="card" style="padding:0.75rem;overflow-x:auto">
+    <table class="mult-table" id="mult-edit-table" style="width:100%">
+      <thead>
+        <tr>
+          <th style="text-align:left;min-width:130px">Decision</th>
+          <th>4P</th><th>5P</th><th>6P</th><th>7P</th>
+        </tr>
+      </thead>
+      <tbody id="mult-edit-body"></tbody>
+    </table>
+    <button class="btn btn-sm" onclick="resetMultipliers()" style="margin-top:10px;font-size:11px">Reset to defaults</button>
   </div>
 
   <div class="mt-3">
@@ -661,7 +670,9 @@
     <div class="card">
       <div class="row">
         <label class="text-sm" style="min-width:140px">Base points this hole</label>
-        <input type="number" id="wolf-hole-pts-input" min="1" max="50" value="8" style="width:80px;text-align:center" onchange="updateWolfHolePts()">
+        <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="3" id="wolf-hole-pts-input" value="8"
+          style="width:80px;text-align:center;font-size:18px;font-weight:700;font-family:'DM Mono',monospace"
+          oninput="updateWolfHolePts()">
       </div>
     </div>
   </div>
@@ -838,14 +849,15 @@
 
 <script>
 // ===================== STATE =====================
-const MULTIPLIERS = {
-  //         4    5    6    7
-  loneAfterTee:  [3,   4,   5,   6],
-  loneAfterAll:  [2,   3,   4,   5],
-  picks1:        [1,   2,   3,   4],
+// Default multipliers — overwritten from setup inputs at game start
+const DEFAULT_MULTIPLIERS = {
+  loneAfterTee:  [3,   4,   4,   5],
+  loneAfterAll:  [2,   3,   3,   4],
+  picks1:        [1,   2,   2,   3],
   picks2:        [null,1,   1,   2],
-  picks3:        [null,null,1,   1],
+  picks3:        [null,null,null,1],
 };
+let MULTIPLIERS = JSON.parse(JSON.stringify(DEFAULT_MULTIPLIERS));
 const MULT_LABELS = ['Lone Wolf (after tee)','Lone Wolf (after all)','Picks 1','Picks 2','Picks 3'];
 const MULT_KEYS   = ['loneAfterTee','loneAfterAll','picks1','picks2','picks3'];
 
@@ -867,6 +879,7 @@ function defaultG() {
     handicaps: [],
     holeRatings: null,
     hasHandicaps: false,
+    multipliers: null, // stored at game start, null = use current MULTIPLIERS
     currentHole: 1,
     scores: [], // array of {hole, wolfIdx, partnerIdxs, mode, basePoints, totalPoints, carryover, result, playerDeltas}
     points: [], // running point total per player
@@ -913,21 +926,44 @@ function updateSetup() {
 }
 
 function renderMultTable(n) {
+  // Render editable multiplier grid
+  const body = document.getElementById('mult-edit-body');
+  if (!body) return;
   const cols = [4,5,6,7];
-  let html = '<thead><tr><th style="text-align:left">Decision</th>';
-  cols.forEach(c => html += `<th>${c}P</th>`);
-  html += '</tr></thead><tbody>';
+  let html = '';
   MULT_KEYS.forEach((k,ki) => {
-    html += `<tr><td style="text-align:left;font-size:12px">${MULT_LABELS[ki]}</td>`;
-    cols.forEach((c,ci) => {
+    html += `<tr><td style="text-align:left;font-size:11px;padding:4px 2px;color:var(--muted)">${MULT_LABELS[ki]}</td>`;
+    cols.forEach((ci_val, ci) => {
       const v = MULTIPLIERS[k][ci];
-      if (v === null) html += `<td class="na">—</td>`;
-      else html += `<td class="${c===n?'highlight':''}">${v}×</td>`;
+      const isNull = DEFAULT_MULTIPLIERS[k][ci] === null;
+      const isCur  = ci_val === n;
+      if (isNull) {
+        html += `<td class="na" style="color:var(--border)">—</td>`;
+      } else {
+        html += `<td style="${isCur?'background:var(--surface2)':''}">
+          <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="2"
+            id="mult-${k}-${ci}" value="${v !== null ? v : ''}"
+            style="width:36px;text-align:center;padding:3px 2px;font-size:13px;font-weight:600;
+              background:transparent;border:1px solid var(--border);border-radius:4px;
+              color:var(--text);font-family:'DM Mono',monospace"
+            onchange="updateMultiplier('${k}',${ci},this.value)">
+        </td>`;
+      }
     });
     html += '</tr>';
   });
-  html += '</tbody>';
-  document.getElementById('mult-ref-table').innerHTML = html;
+  body.innerHTML = html;
+}
+
+function updateMultiplier(key, ci, val) {
+  const v = parseInt(val);
+  MULTIPLIERS[key][ci] = (isNaN(v) || v < 1) ? null : v;
+}
+
+function resetMultipliers() {
+  MULTIPLIERS = JSON.parse(JSON.stringify(DEFAULT_MULTIPLIERS));
+  const n = parseInt(document.getElementById('num-players').value);
+  renderMultTable(n);
 }
 
 function startGame() {
@@ -948,9 +984,21 @@ function startGame() {
   // Ratings: use entered values if inputs exist, otherwise default sequence 1-18
   // This ensures stroke badges always show when handicaps are entered
 
+  // Capture any edited multiplier values from inputs
+  MULT_KEYS.forEach((k, ki) => {
+    [0,1,2,3].forEach(ci => {
+      const el = document.getElementById('mult-' + k + '-' + ci);
+      if (el) {
+        const v = parseInt(el.value);
+        MULTIPLIERS[k][ci] = (isNaN(v) || v < 1) ? null : v;
+      }
+    });
+  });
+
   G = defaultG();
   G.numPlayers = n;
   G.players = names;
+  G.multipliers = JSON.parse(JSON.stringify(MULTIPLIERS)); // snapshot at game start
   G.wolfHole = parseInt(document.getElementById('cfg-wolf-hole').value);
   G.ptsFront = parseInt(document.getElementById('cfg-pts-front').value);
   G.ptsBack  = parseInt(document.getElementById('cfg-pts-back').value);
@@ -1058,10 +1106,24 @@ function renderHole() {
 }
 
 function updateWolfHolePts() {
-  holeState.wolfHolePts = parseInt(document.getElementById('wolf-hole-pts-input').value) || 8;
-  holeState.basePts = holeState.wolfHolePts;
+  const raw = parseInt(document.getElementById('wolf-hole-pts-input').value);
+  if (!raw || raw < 1) return; // wait for valid value
+  holeState.wolfHolePts = raw;
+  holeState.basePts = raw;
   const woCarry = holeState.isWolfHole ? 0 : G.carryover;
   document.getElementById('hole-pts-display').textContent = holeState.basePts + woCarry;
+  // Also update the stake display if team is already confirmed (phase 2 visible)
+  const stakeEl = document.getElementById('hole-stake-display');
+  const multDisplayEl = document.getElementById('hole-mult-display');
+  if (stakeEl && holeState.mode) {
+    const n = G.numPlayers;
+    const activeMults = G.multipliers || MULTIPLIERS;
+    const multKey = holeState.mode === 'solo' ? 'loneAfterAll' : holeState.mode;
+    const mult = (activeMults[multKey] ? activeMults[multKey][n-4] : null) || 1;
+    const doubles = holeState.holeDoubles || 0;
+    const totalPts = holeState.basePts * mult * Math.pow(2, doubles);
+    stakeEl.textContent = '$' + totalPts.toFixed(0);
+  }
 }
 
 function renderTeeOrder() {
@@ -1203,21 +1265,22 @@ function updateConfirmButton() {
   const isLone = holeState.mode === 'loneAfterTee' || holeState.mode === 'loneAfterAll';
   const isSolo = holeState.mode === 'solo';
   const n = G.numPlayers;
+  const activeMults = G.multipliers || MULTIPLIERS;
   if (isSolo) {
-    const mult = MULTIPLIERS['loneAfterAll'][n-4];
+    const mult = activeMults['loneAfterAll'] ? activeMults['loneAfterAll'][n-4] : 1;
     const soloName = G.players[holeState.soloIdx];
     btn.textContent = `Confirm Solo: ${soloName} (${mult}×) →`;
     btn.style.background = '#c0392b'; btn.style.borderColor = '#c0392b';
   } else {
     btn.style.background = ''; btn.style.borderColor = '';
     if (isLone) {
-      const mult = MULTIPLIERS[holeState.mode][n-4];
+      const mult = activeMults[holeState.mode] ? activeMults[holeState.mode][n-4] : 1;
       btn.textContent = `Confirm Lone Wolf (${mult}×) →`;
     } else if (np === 0) {
       btn.textContent = 'Confirm Team →';
     } else {
       const modeKey = np===1?'picks1':np===2?'picks2':'picks3';
-      const mult = MULTIPLIERS[modeKey][n-4];
+      const mult = (activeMults[modeKey] ? activeMults[modeKey][n-4] : null) || '?';
       const names = holeState.partnerIdxs.map(i=>G.players[i]).join(', ');
       btn.textContent = `Confirm: Picks ${np} — ${names} (${mult}×) →`;
     }
@@ -1237,7 +1300,8 @@ function confirmTeam() {
   // Validate multiplier exists (solo uses loneAfterAll multiplier)
   const n = G.numPlayers;
   const multKey = isSolo ? 'loneAfterAll' : holeState.mode;
-  const mult = MULTIPLIERS[multKey][n-4];
+  const activeMults = G.multipliers || MULTIPLIERS;
+  const mult = (activeMults[multKey] ? activeMults[multKey][n-4] : null) || 1;
   if (mult === null) { alert('Invalid pick count for this player count.'); return; }
 
   // Hide phase 1, show phase 2
@@ -1257,7 +1321,8 @@ function renderTeamSummary() {
   const n = G.numPlayers;
   const isSolo = holeState.mode === 'solo';
   const multKey = isSolo ? 'loneAfterAll' : holeState.mode;
-  const mult = MULTIPLIERS[multKey][n-4];
+  const activeMults = G.multipliers || MULTIPLIERS;
+  const mult = (activeMults[multKey] ? activeMults[multKey][n-4] : null) || 1;
   const coForSummary = holeState.isWolfHole ? 0 : G.carryover;
   const totalPts = (holeState.basePts + coForSummary) * mult;
   const modeLabel = isSolo
@@ -1330,7 +1395,8 @@ function adjustHoleMult(delta) {
   holeState.holeDoubles = Math.max(0, (holeState.holeDoubles || 0) + delta);
   const n = G.numPlayers;
   const multKey = holeState.mode === 'solo' ? 'loneAfterAll' : holeState.mode;
-  const mult = MULTIPLIERS[multKey][n-4];
+  const activeMults = G.multipliers || MULTIPLIERS;
+  const mult = (activeMults[multKey] ? activeMults[multKey][n-4] : null) || 1;
   const coForSummary = holeState.isWolfHole ? 0 : G.carryover;
   const baseTotalPts = (holeState.basePts + coForSummary) * mult;
   const doublesMultiplier = Math.pow(2, holeState.holeDoubles);
@@ -1377,9 +1443,11 @@ function renderScoreInputs() {
     const row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)';
     if (order === holeState.teeOrder.length-1) row.style.borderBottom = 'none';
-    const strokeBadge = strokes > 0
-      ? `<span class="hcp-stroke-badge" title="${strokes} stroke(s) on this hole">${strokes}</span>`
-      : (G.hasHandicaps ? `<span style="width:20px"></span>` : '');
+    const strokeBadge = G.hasHandicaps
+      ? (strokes > 0
+          ? `<span class="hcp-stroke-badge" title="${strokes} stroke(s) on this hole">${strokes}</span>`
+          : `<span style="display:inline-block;width:20px;height:20px;flex-shrink:0"></span>`)
+      : '';
     row.innerHTML = `
       <div style="flex:1;font-size:14px;font-weight:500">${G.players[pidx]}</div>
       ${strokeBadge}
@@ -1438,7 +1506,18 @@ function calculateHole() {
 
   // Multiplier — solo uses loneAfterAll multiplier
   const multKey = isSolo ? 'loneAfterAll' : mode;
-  const mult = MULTIPLIERS[multKey][n-4];
+  const activeMults = G.multipliers || MULTIPLIERS;
+  const mult = activeMults[multKey] ? activeMults[multKey][n-4] : null;
+  if (mult === null || mult === undefined) {
+    const cb = document.getElementById('calc-result-btn');
+    if (cb) { cb.disabled = false; cb.textContent = 'Calculate Result →'; cb.style.opacity = '1'; }
+    for (let _j = 0; _j < n; _j++) {
+      const inp = document.getElementById('score-input-' + _j);
+      if (inp) { inp.disabled = false; inp.style.opacity = '1'; }
+    }
+    alert('Invalid Wolf decision for ' + n + ' players — please re-select.');
+    return;
+  }
   const basePts = holeState.basePts;
   // Wolf holes never include carryover — stake stands alone
   const effectiveCarryover = holeState.isWolfHole ? 0 : G.carryover;
@@ -1705,7 +1784,8 @@ function computeHolePayout(s, carryoverIn) {
   const isWolfHole = s.hole >= G.wolfHole;
   const effectiveCarryover = isWolfHole ? 0 : carryoverIn;
   const multKey = isSolo ? 'loneAfterAll' : s.mode;
-  const mult = MULTIPLIERS[multKey][n-4];
+  const activeMults = G.multipliers || MULTIPLIERS;
+  const mult = (activeMults[multKey] ? activeMults[multKey][n-4] : null) || 1;
   const holeDoubles = s.holeDoubles || 0;
   const totalPts = (s.basePts + effectiveCarryover) * mult * Math.pow(2, holeDoubles);
 
@@ -1821,8 +1901,11 @@ function startEditHole(si) {
   let scoreRows = '';
   for (let i = 0; i < n; i++) {
     const strokes = strokesOnHole(i, s.hole);
-    const strokeBadge = strokes > 0
-      ? `<span class="hcp-stroke-badge" style="margin-right:4px">${strokes}</span>` : '';
+    const strokeBadge = G.hasHandicaps
+      ? (strokes > 0
+          ? `<span class="hcp-stroke-badge" style="margin-right:4px">${strokes}</span>`
+          : `<span style="display:inline-block;width:20px;height:20px;flex-shrink:0;margin-right:4px"></span>`)
+      : '';
     const isWolf = i === s.wolfIdx;
     const isPartner = s.partnerIdxs.includes(i);
     const nameColor = isWolf ? 'color:var(--gold)' : isPartner ? 'color:#3db370' : '';
@@ -1857,6 +1940,7 @@ function startEditHole(si) {
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;overflow-y:auto;padding:1.5rem 1rem 3rem';
   overlay.innerHTML = `
     <div style="max-width:500px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem">
+
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border)">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;font-weight:700;color:var(--gold)">Edit Hole ${s.hole}${isWolfHole?' <span style="font-size:13px;color:var(--gold-dim)">Wolf Hole</span>':''}</div>
         <button onclick="closeEditOverlay()" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);padding:4px 10px;cursor:pointer;font-family:var(--font-sans,sans-serif)">✕ Cancel</button>
@@ -1865,14 +1949,14 @@ function startEditHole(si) {
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
         Wolf: <strong style="color:var(--gold)">${G.players[s.wolfIdx]}</strong> ·
         <strong>${modeLabel} · ${mult}×</strong> ·
-        <span style="color:var(--muted)">Team: ${wolfTeam.map(i=>G.players[i]).join(', ')} vs ${opponents.map(i=>G.players[i]).join(', ')}</span>
+        <span>Team: ${wolfTeam.map(i=>G.players[i]).join(', ')} vs ${opponents.map(i=>G.players[i]).join(', ')}</span>
       </div>
 
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px">Scores</div>
-      <div style="margin-bottom:14px">${scoreRows}</div>
+      <div style="margin-bottom:10px">${scoreRows}</div>
       ${wolfHolePtsRow}
 
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--border);margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--border);margin-bottom:12px">
         <div style="flex:1">
           <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Number of Doubles</div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px">This hole only · not carried forward</div>
@@ -1884,11 +1968,31 @@ function startEditHole(si) {
           style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:18px;cursor:pointer;font-family:var(--font-sans,sans-serif)">+</button>
       </div>
 
-      <button onclick="saveEditHole(${si})"
-        style="width:100%;padding:13px;border-radius:6px;background:var(--gold);color:#111;border:none;
-        font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-sans,sans-serif)">
-        Save & Recalculate →
+      <!-- Recalculate button -->
+      <button onclick="recalculateEditPreview(${si})"
+        style="width:100%;padding:10px;border-radius:6px;background:transparent;color:var(--text);
+        border:1px solid var(--border);font-size:14px;font-weight:500;cursor:pointer;
+        font-family:var(--font-sans,sans-serif);margin-bottom:10px">
+        ⟳ Recalculate Preview
       </button>
+
+      <!-- Preview result card — populated by recalculateEditPreview -->
+      <div id="edit-preview" style="margin-bottom:14px;display:none"></div>
+
+      <!-- Cancel / Save buttons -->
+      <div style="display:flex;gap:8px">
+        <button onclick="closeEditOverlay()"
+          style="flex:1;padding:12px;border-radius:6px;background:transparent;border:1px solid var(--border);
+          color:var(--text);font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-sans,sans-serif)">
+          Cancel
+        </button>
+        <button onclick="saveEditHole(${si})"
+          style="flex:2;padding:12px;border-radius:6px;background:var(--gold);color:#111;border:none;
+          font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-sans,sans-serif)">
+          Save & Return →
+        </button>
+      </div>
+
     </div>`;
 
   document.body.appendChild(overlay);
@@ -1902,6 +2006,114 @@ function adjustEditMult(delta) {
   let m = Math.max(0, parseInt(overlay.dataset.mult||0) + delta);
   overlay.dataset.mult = m;
   document.getElementById('edit-mult-display').textContent = m;
+}
+
+function recalculateEditPreview(si) {
+  const overlay = document.getElementById('edit-overlay');
+  if (!overlay) return;
+  const n = G.numPlayers;
+
+  // Validate all scores entered
+  for (let i = 0; i < n; i++) {
+    const inp = overlay.querySelector('#edit-score-' + i);
+    const v = parseInt(inp?.value || '');
+    if (isNaN(v) || v < 1) {
+      alert('Enter a valid score for ' + G.players[i]);
+      return;
+    }
+  }
+
+  // Build a temporary score record from current overlay inputs
+  const tempScore = JSON.parse(JSON.stringify(G.scores[si]));
+  const newGrossScores = [];
+  for (let i = 0; i < n; i++) {
+    newGrossScores.push(parseInt(overlay.querySelector('#edit-score-' + i).value));
+  }
+  tempScore.grossScores = newGrossScores;
+  tempScore.holeDoubles = parseInt(overlay.dataset.mult || 0);
+  const editBasePts = overlay.querySelector('#edit-basepts');
+  if (editBasePts) {
+    const v = parseInt(editBasePts.value);
+    if (!isNaN(v) && v > 0) tempScore.basePts = v;
+  }
+
+  // Compute carryover going into this hole
+  let carryoverIn = 0;
+  for (let i = 0; i < si; i++) carryoverIn = G.scores[i].carryover;
+
+  // Run payout on temp record
+  const { deltas, result, totalPts } = computeHolePayout(tempScore, carryoverIn);
+
+  // Compute what running totals WOULD be after this hole
+  // Start from points before si
+  const pointsBefore = new Array(n).fill(0);
+  for (let i = 0; i < si; i++) {
+    G.scores[i].deltas.forEach((d, pi) => pointsBefore[pi] += d);
+  }
+  const runningTotals = pointsBefore.map((p, i) => p + deltas[i]);
+
+  // Build preview HTML — same layout as hole result card
+  const showHcp = G.hasHandicaps;
+  const wolfTeam = tempScore.mode === 'solo' ? [] : [tempScore.wolfIdx, ...tempScore.partnerIdxs];
+  const isSolo   = tempScore.mode === 'solo';
+  const colorClass = (result==='wolf-wins'||result==='solo-wins') ? 'wolf-wins'
+    : (result==='opponents-win'||result==='solo-lost') ? 'opponents-win' : 'push';
+  const icon = result==='wolf-wins'?'🐺':result==='solo-wins'?'★'
+    :result==='opponents-win'||result==='solo-lost'?'⚔️':'🤝';
+  const resultMsg = result==='wolf-wins'?'Wolf Team Wins!':result==='solo-wins'?
+    `${G.players[tempScore.soloIdx]} Wins Solo!`:result==='push'?
+    'Push':result==='solo-lost'?`${G.players[tempScore.soloIdx]} Solo Failed!`:'Opponents Win!';
+
+  const sortedIdxs = [...Array(n).keys()].sort((a,b) => runningTotals[b]-runningTotals[a]);
+
+  let headerRow = '<div style="display:flex;padding:0 0 5px;border-bottom:1px solid var(--border);margin-bottom:2px">'
+    + '<span style="flex:1;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Player</span>'
+    + (showHcp ? '<span style="width:44px;text-align:right;font-size:10px;color:var(--muted)">Gross</span>'
+               + '<span style="width:36px;text-align:right;font-size:10px;color:var(--muted)">Net</span>' : '')
+    + '<span style="width:60px;text-align:right;font-size:10px;color:var(--muted)">Hole $</span>'
+    + '<span style="width:60px;text-align:right;font-size:10px;color:var(--muted)">Total</span>'
+    + '</div>';
+
+  let dataRows = '';
+  sortedIdxs.forEach(i => {
+    const d     = deltas[i];
+    const total = runningTotals[i];
+    const gross = newGrossScores[i];
+    const strokes = strokesOnHole(i, tempScore.hole);
+    const net   = gross - strokes;
+    const dsign = d > 0 ? '+' : '';
+    const tsign = total > 0 ? '+' : '';
+    const dcls  = d > 0 ? 'color:#27ae60' : d < 0 ? 'color:#c0392b' : 'color:var(--muted)';
+    const tcls  = total > 0 ? 'color:#27ae60' : total < 0 ? 'color:#c0392b' : 'color:var(--muted)';
+    const isWolfP   = i === tempScore.wolfIdx;
+    const isPartnerP = tempScore.partnerIdxs && tempScore.partnerIdxs.includes(i);
+    const isSoloP   = isSolo && i === tempScore.soloIdx;
+    const nameColor = isSoloP ? 'color:#e74c3c' : isWolfP ? 'color:var(--gold)' : isPartnerP ? 'color:#3db370' : 'color:var(--text)';
+    const prefix = isSoloP ? '★ ' : isWolfP ? '🐺 ' : '';
+    const dVal  = d === 0 ? '—' : dsign + '$' + Math.abs(d).toFixed(0);
+    const tVal  = tsign + '$' + Math.abs(total).toFixed(0);
+    const dot   = strokes > 0 ? '<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gold);margin-left:2px;vertical-align:middle"></span>' : '';
+    dataRows += '<div style="display:flex;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)">'
+      + '<span style="flex:1;font-size:13px;font-weight:600;' + nameColor + '">' + prefix + G.players[i] + '</span>'
+      + (showHcp
+          ? '<span style="width:44px;text-align:right;font-size:12px;color:var(--muted)">' + gross + dot + '</span>'
+          + '<span style="width:36px;text-align:right;font-size:12px;color:var(--text)">' + net + '</span>'
+          : '')
+      + '<span style="width:60px;text-align:right;font-size:13px;font-weight:700;' + dcls + '">' + dVal + '</span>'
+      + '<span style="width:60px;text-align:right;font-size:14px;font-weight:700;' + tcls + '">' + tVal + '</span>'
+      + '</div>';
+  });
+
+  const previewEl = document.getElementById('edit-preview');
+  previewEl.style.display = 'block';
+  previewEl.innerHTML =
+    '<div class="result-banner ' + colorClass + '" style="margin-bottom:8px">'
+    + '<div class="result-title">' + icon + ' ' + resultMsg + '</div>'
+    + '<div style="font-size:11px;color:var(--muted);margin-top:2px">$' + totalPts.toFixed(0) + ' stake</div>'
+    + '</div>'
+    + '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px">'
+    + headerRow + dataRows
+    + '</div>';
 }
 
 function closeEditOverlay() {
@@ -1962,8 +2174,24 @@ function saveEditHole(si) {
 // without resetting holeState (picks and scores are already committed for current hole)
 function refreshHoleScreenAfterEdit() {
   const h = G.currentHole;
+  const n = G.numPlayers;
   const isWolfHole = h >= G.wolfHole;
   const displayCarryover = isWolfHole ? 0 : G.carryover;
+
+  // ── Re-determine wolf on wolf holes (points may have changed after edit) ─
+  if (isWolfHole && holeState && !holeState.resultShown) {
+    const minPts = Math.min(...G.points);
+    const tied = G.points.map((p,i) => p===minPts?i:-1).filter(i=>i>=0);
+    const newWolfIdx = tied[Math.floor(Math.random()*tied.length)];
+    if (newWolfIdx !== holeState.wolfIdx) {
+      holeState.wolfIdx = newWolfIdx;
+      holeState.teeOrder = [];
+      for (let i = 0; i < n; i++) holeState.teeOrder.push((newWolfIdx + i) % n);
+      holeState.partnerIdxs = [];
+      holeState.soloIdx = null;
+      holeState.mode = null;
+    }
+  }
 
   // ── Banner: wolf name, stake, carryover badge ──────────────────────────
   if (holeState && holeState.wolfIdx !== undefined) {
@@ -2009,23 +2237,33 @@ function refreshHoleScreenAfterEdit() {
 }
 
 function buildLedger() {
-  // Settle debts optimally
   const pts = [...G.points];
   const n = G.numPlayers;
-  const transactions = [];
 
+  // ── Totals summary ────────────────────────────────────────────────────────
+  const sortedByTotal = [...Array(n).keys()].sort((a,b) => pts[b]-pts[a]);
+  let totalsHtml = '<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:8px">Total Winnings / Losses</div>';
+  sortedByTotal.forEach(i => {
+    const amt = pts[i];
+    const sign = amt >= 0 ? '+' : '';
+    const cls = amt > 0 ? 'color:var(--green)' : amt < 0 ? 'color:var(--red)' : 'color:var(--muted)';
+    totalsHtml += `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:14px;font-weight:500">${G.players[i]}</span>
+      <span style="font-family:'DM Mono',monospace;font-size:16px;font-weight:700;${cls}">${sign}$${Math.abs(amt)}</span>
+    </div>`;
+  });
+
+  // ── Settlement (who pays whom) ─────────────────────────────────────────
+  const transactions = [];
   const balances = pts.map((p,i) => ({i, amt: p}));
-  // Separate payers (negative) and receivers (positive)
-  const payers = balances.filter(b=>b.amt<0).sort((a,b)=>a.amt-b.amt);
+  const payers   = balances.filter(b=>b.amt<0).sort((a,b)=>a.amt-b.amt);
   const receivers = balances.filter(b=>b.amt>0).sort((a,b)=>b.amt-a.amt);
 
   let pi = 0, ri = 0;
   while (pi < payers.length && ri < receivers.length) {
     const pay = payers[pi], rec = receivers[ri];
     const amt = Math.min(-pay.amt, rec.amt);
-    if (amt > 0.01) {
-      transactions.push({from: pay.i, to: rec.i, amt});
-    }
+    if (amt > 0.01) transactions.push({from: pay.i, to: rec.i, amt});
     pay.amt += amt;
     rec.amt -= amt;
     if (Math.abs(pay.amt) < 0.01) pi++;
@@ -2033,17 +2271,20 @@ function buildLedger() {
   }
 
   if (transactions.length === 0) {
-    return '<div class="text-muted text-sm">All square — no money changes hands!</div>';
+    return totalsHtml + '<div class="text-muted text-sm" style="margin-top:12px">All square — no money changes hands!</div>';
   }
 
-  return transactions.map(t =>
-    `<div class="ledger-row">
-      <span style="font-size:14px">${G.players[t.from]}</span>
-      <span class="ledger-arrow">→</span>
-      <span style="font-size:14px">${G.players[t.to]}</span>
-      <span class="ledger-amt">$${t.amt.toFixed(2)}</span>
-    </div>`
-  ).join('');
+  const settleHtml = '<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin:14px 0 8px">Settlement</div>'
+    + transactions.map(t =>
+        `<div class="ledger-row">
+          <span style="font-size:14px">${G.players[t.from]}</span>
+          <span class="ledger-arrow">→</span>
+          <span style="font-size:14px">${G.players[t.to]}</span>
+          <span class="ledger-amt">$${t.amt.toFixed(0)}</span>
+        </div>`
+      ).join('');
+
+  return totalsHtml + settleHtml;
 }
 
 // ===================== NAVIGATION =====================
@@ -2376,6 +2617,8 @@ function resumeGame() {
   const saved = loadSave();
   if (!saved) return;
   G = saved;
+  // Restore multipliers from saved round
+  if (G.multipliers) MULTIPLIERS = JSON.parse(JSON.stringify(G.multipliers));
   document.getElementById('resume-banner').style.display = 'none';
   document.getElementById('main-nav').style.display = 'flex';
   if (G.gameOver) {
