@@ -513,12 +513,15 @@
 
   <!-- Resume saved round banner -->
   <div id="resume-banner" style="display:none;margin-bottom:12px">
-    <div class="card" style="border-color:var(--gold-dim);background:#1a1600">
-      <div style="font-size:14px;font-weight:500;color:var(--gold);margin-bottom:6px">🐺 Round in progress</div>
-      <div id="resume-info" style="font-size:13px;color:var(--muted);margin-bottom:12px"></div>
+    <div class="card" style="border-color:var(--gold);border-width:2px;background:#1a1600">
+      <div style="font-size:18px;font-weight:600;color:var(--gold);margin-bottom:6px">🐺 Round in Progress</div>
+      <div id="resume-info" style="font-size:13px;color:var(--muted);margin-bottom:6px;line-height:1.5"></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Tap Resume to continue, or Discard to start a new round.</div>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-primary" style="flex:1" onclick="resumeGame()">Resume Round</button>
-        <button class="btn btn-danger" style="flex:1" onclick="discardSave()">Discard</button>
+        <button class="btn btn-primary btn-full" style="padding:12px;font-size:15px" onclick="resumeGame()">▶ Resume Round</button>
+      </div>
+      <div style="margin-top:8px">
+        <button class="btn btn-danger btn-full" onclick="discardSave()">Discard &amp; Start New</button>
       </div>
     </div>
   </div>
@@ -582,6 +585,17 @@
     </div>
   </div>
 
+  <div class="section-label">Starting Hole</div>
+  <div class="card">
+    <div class="row">
+      <label class="text-sm" style="min-width:120px">Start on hole</label>
+      <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="2"
+        id="cfg-start-hole" value="1"
+        style="width:60px;text-align:center;font-size:16px;font-weight:700;font-family:'DM Mono',monospace">
+      <span class="text-sm text-muted" id="start-hole-note" style="flex:1;padding-left:8px">Plays 1 → 18</span>
+    </div>
+  </div>
+
   <div class="section-label">Player Names <span class="chip">in tee-off order</span></div>
   <div class="card">
     <div class="player-inputs" id="player-name-inputs"></div>
@@ -598,15 +612,15 @@
       </thead>
       <tbody>
         <tr>
-          <td class="label-cell">The Wolf Hole Begins</td>
+          <td class="label-cell">Wolf Hole Begins</td>
           <td><input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="2" id="cfg-wolf-hole" value="17" style="width:70px;text-align:center"></td>
         </tr>
         <tr>
-          <td class="label-cell">Points · Holes 1–8</td>
+          <td class="label-cell">Points Holes Played 1-8</td>
           <td><input type="number" id="cfg-pts-front" min="1" max="20" value="2" style="width:70px;text-align:center"></td>
         </tr>
         <tr>
-          <td class="label-cell">Points · Holes 9–Wolf hole</td>
+          <td class="label-cell">Points Holes Played 9-Wolf Hole</td>
           <td><input type="number" id="cfg-pts-back" min="1" max="20" value="4" style="width:70px;text-align:center"></td>
         </tr>
       </tbody>
@@ -645,7 +659,9 @@
       <div class="app-title">Wolf</div>
       <div class="app-sub" id="hole-app-sub">Hole 1 of 18</div>
     </div>
-    <button class="btn btn-sm" onclick="showScreen('screen-scores')" style="margin-left:auto">Scores ↗</button>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <button class="btn btn-sm" onclick="showScreen('screen-scores')" >Scores ↗</button>
+    </div>
   </div>
 
   <!-- Hole banner -->
@@ -813,6 +829,90 @@
   </div>
 </div>
 
+<!-- ===== SCREEN: SETTINGS ===== -->
+<div id="screen-settings" class="screen">
+  <div class="app-header">
+    <div class="wolf-icon">🐺</div>
+    <div>
+      <div class="app-title">Settings</div>
+      <div class="app-sub">Mid-round adjustments</div>
+    </div>
+  </div>
+
+  <div id="settings-course-section">
+    <div class="section-label">Course &amp; Tee <span class="chip" id="settings-course-chip"></span></div>
+    <div class="card" id="settings-course-card">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="row">
+          <label class="text-sm" style="min-width:100px;color:var(--muted)">Starting Hole</label>
+          <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="2"
+            id="settings-start-hole" style="width:70px;text-align:center;font-size:16px;font-weight:700">
+        </div>
+        <div class="row">
+          <label class="text-sm" style="min-width:100px;color:var(--muted)">Course</label>
+          <input type="text" id="settings-course-name" placeholder="Course name">
+        </div>
+        <div class="row">
+          <label class="text-sm" style="min-width:100px;color:var(--muted)">Load Course</label>
+          <select id="settings-course-select" onchange="onSettingsCourseSelect()" style="flex:1">
+            <option value="">— Select from library —</option>
+          </select>
+        </div>
+        <div class="row" id="settings-tee-row" style="display:none">
+          <label class="text-sm" style="min-width:100px;color:var(--muted)">Tee</label>
+          <select id="settings-tee-select" onchange="onSettingsTeeSelect()" style="flex:1">
+            <option value="">— Select tee —</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Players &amp; Handicaps</div>
+  <div class="card">
+    <div id="settings-players-list"></div>
+  </div>
+
+  <div class="section-label">Point Values</div>
+  <div class="card">
+    <table class="config-table">
+      <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="label-cell">Wolf Hole Begins</td>
+          <td><input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="2" id="settings-wolf-hole" style="width:70px;text-align:center"></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Points Holes Played 1-8</td>
+          <td><input type="number" id="settings-pts-front" min="1" max="20" style="width:70px;text-align:center"></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Points Holes Played 9-Wolf Hole</td>
+          <td><input type="number" id="settings-pts-back" min="1" max="20" style="width:70px;text-align:center"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-label">Point Multipliers</div>
+  <div class="card" style="padding:0.75rem;overflow-x:auto">
+    <table class="mult-table" style="width:100%">
+      <thead>
+        <tr>
+          <th style="text-align:left;min-width:130px">Decision</th>
+          <th>4P</th><th>5P</th><th>6P</th><th>7P</th>
+        </tr>
+      </thead>
+      <tbody id="settings-mult-body"></tbody>
+    </table>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-top:1.5rem">
+    <button class="btn" style="flex:1" onclick="showScreen('screen-hole')">Cancel</button>
+    <button class="btn btn-primary" style="flex:2" onclick="saveSettings()">Save &amp; Recalculate &#8594;</button>
+  </div>
+</div>
+
 <!-- NAV BAR -->
 <!-- ===== SCREEN: SCORECARD ===== -->
 <div id="screen-scorecard" class="screen">
@@ -841,6 +941,9 @@
   </button>
   <button class="nav-item" id="nav-scorecard" onclick="showScreen('screen-scorecard');renderScorecard()">
     <span class="nav-icon">📊</span>Card
+  </button>
+  <button class="nav-item" id="nav-settings" onclick="showScreen('screen-settings');renderSettings()">
+    <span class="nav-icon">⚙️</span>Settings
   </button>
   <button class="nav-item" id="nav-courses" onclick="showScreen('screen-courses');renderCourseLibrary()">
     <span class="nav-icon">🏌</span>Courses
@@ -880,6 +983,8 @@ function defaultG() {
     holeRatings: null,
     hasHandicaps: false,
     multipliers: null, // stored at game start, null = use current MULTIPLIERS
+    startingHole: 1,  // hole the round begins on
+    teeRef: null,     // {courseIdx, teeIdx} for pre-selecting in settings
     currentHole: 1,
     scores: [], // array of {hole, wolfIdx, partnerIdxs, mode, basePoints, totalPoints, carryover, result, playerDeltas}
     points: [], // running point total per player
@@ -891,34 +996,64 @@ function defaultG() {
 
 // ===================== SETUP =====================
 function updateSetup() {
-  const n = parseInt(document.getElementById('num-players').value);
-  const wolfHoleDefault = DEFAULT_WOLF_HOLE[n];
-  const pfDefault = DEFAULT_PTS_FRONT[n];
-  const pbDefault = DEFAULT_PTS_BACK[n];
-  document.getElementById('cfg-wolf-hole').value = wolfHoleDefault;
-  document.getElementById('cfg-pts-front').value = pfDefault;
-  document.getElementById('cfg-pts-back').value = pbDefault;
+  const numSel = document.getElementById('num-players');
+  if (!numSel) return;
+  const n = parseInt(numSel.value) || 4;
 
-  // Player name inputs
+  // Config defaults
+  const pfDefault = DEFAULT_PTS_FRONT[n] || 2;
+  const pbDefault = DEFAULT_PTS_BACK[n] || 4;
+  const startHoleVal = parseInt(document.getElementById('cfg-start-hole')?.value) || 1;
+  const wolfHoleBySeq = ((startHoleVal - 1 + 16) % 18) + 1;
+
+  const whEl = document.getElementById('cfg-wolf-hole');
+  const pfEl = document.getElementById('cfg-pts-front');
+  const pbEl = document.getElementById('cfg-pts-back');
+  if (whEl) whEl.value = wolfHoleBySeq;
+  if (pfEl) pfEl.value = pfDefault;
+  if (pbEl) pbEl.value = pbDefault;
+
+  // Player name inputs — build using createElement (no template literal)
   const cont = document.getElementById('player-name-inputs');
-  const existing = [];
-  const existingHcps = [];
-  cont.querySelectorAll('.player-row').forEach(row => {
+  if (!cont) return;
+
+  // Save existing values before clearing
+  const existing = [], existingHcps = [];
+  cont.querySelectorAll('.player-row').forEach(function(row) {
     const inputs = row.querySelectorAll('input');
     existing.push(inputs[0] ? inputs[0].value : '');
     existingHcps.push(inputs[1] ? inputs[1].value : '');
   });
+
   cont.innerHTML = '';
-  for (let i = 0; i < n; i++) {
-    const row = document.createElement('div');
+
+  for (var i = 0; i < n; i++) {
+    var row = document.createElement('div');
     row.className = 'player-row';
-    const existingHcp = existingHcps[i] !== undefined ? existingHcps[i] : '';
-    row.innerHTML = `
-      <div class="player-num">${i+1}</div>
-      <input type="text" placeholder="Player ${i+1}" value="${existing[i]||''}" style="flex:1">
-      <input type="number" min="0" max="36" placeholder="HCP" title="Course Handicap"
-        value="${existingHcp}" style="width:70px;text-align:center;flex-shrink:0">
-    `;
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:8px';
+
+    var num = document.createElement('div');
+    num.className = 'player-num';
+    num.textContent = i + 1;
+
+    var nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.placeholder = 'Player ' + (i + 1);
+    nameInput.value = existing[i] || '';
+    nameInput.style.flex = '1';
+
+    var hcpInput = document.createElement('input');
+    hcpInput.type = 'number';
+    hcpInput.min = '0';
+    hcpInput.max = '36';
+    hcpInput.placeholder = 'HCP';
+    hcpInput.title = 'Course Handicap';
+    hcpInput.value = existingHcps[i] || '';
+    hcpInput.style.cssText = 'width:70px;text-align:center;flex-shrink:0';
+
+    row.appendChild(num);
+    row.appendChild(nameInput);
+    row.appendChild(hcpInput);
     cont.appendChild(row);
   }
 
@@ -969,11 +1104,22 @@ function resetMultipliers() {
 function startGame() {
   const n = parseInt(document.getElementById('num-players').value);
   const names = [], handicaps = [];
-  document.getElementById('player-name-inputs').querySelectorAll('.player-row').forEach((row, idx) => {
-    const inputs = row.querySelectorAll('input');
-    names.push((inputs[0]?.value||'').trim() || `Player ${idx+1}`);
-    handicaps.push(parseInt(inputs[1]?.value)||0);
-  });
+  const playerRows = document.getElementById('player-name-inputs').querySelectorAll('.player-row');
+  if (playerRows.length === 0) {
+    // Inputs not rendered yet — force render then re-read
+    updateSetup();
+    document.getElementById('player-name-inputs').querySelectorAll('.player-row').forEach(function(row, idx) {
+      const inputs = row.querySelectorAll('input');
+      names.push((inputs[0] ? inputs[0].value : '').trim() || ('Player ' + (idx+1)));
+      handicaps.push(parseInt(inputs[1] ? inputs[1].value : '') || 0);
+    });
+  } else {
+    playerRows.forEach(function(row, idx) {
+      const inputs = row.querySelectorAll('input');
+      names.push((inputs[0] ? inputs[0].value : '').trim() || ('Player ' + (idx+1)));
+      handicaps.push(parseInt(inputs[1] ? inputs[1].value : '') || 0);
+    });
+  }
   // Hole handicap ratings
   const holeRatings = [];
   for (let h = 1; h <= 18; h++) {
@@ -1003,6 +1149,10 @@ function startGame() {
   G.ptsFront = parseInt(document.getElementById('cfg-pts-front').value);
   G.ptsBack  = parseInt(document.getElementById('cfg-pts-back').value);
   G.course      = document.getElementById('cfg-course').value.trim() || 'Unknown Course';
+  G.teeRef      = window._pendingTeeRef || null;
+  window._pendingTeeRef = null;
+  G.startingHole = Math.max(1, Math.min(18, parseInt(document.getElementById('cfg-start-hole').value)||1));
+  G.currentHole  = G.startingHole;
   G.date        = document.getElementById('cfg-date').value || new Date().toISOString().slice(0,10);
   G.handicaps   = handicaps;
   // Always provide ratings — entered values if available, else default 1-18
@@ -1023,9 +1173,10 @@ let holeState = {};
 function renderHole() {
   const h = G.currentHole;
   const n = G.numPlayers;
-  const isWolfHole = h >= G.wolfHole;
+  const playIdx = holePlayIndex(h); // 0-based play sequence position
+  const isWolfHole = (playIdx + 1) >= G.wolfHole; // wolf hole when play pos >= wolfHole setting
 
-  // Determine wolf
+  // Determine wolf — Player 1 (index 0) on play pos 1, rotates each hole
   let wolfIdx;
   if (isWolfHole) {
     // Player with fewest points; tie → random
@@ -1033,7 +1184,7 @@ function renderHole() {
     const tied = G.points.map((p,i) => p===minPts?i:-1).filter(i=>i>=0);
     wolfIdx = tied[Math.floor(Math.random()*tied.length)];
   } else {
-    wolfIdx = (h - 1) % n;
+    wolfIdx = playIdx % n; // Player 1 at playIdx=0, Player 2 at playIdx=1, etc.
   }
 
   // Tee order starts from wolf
@@ -1044,11 +1195,11 @@ function renderHole() {
   let basePts;
   if (isWolfHole) {
     basePts = holeState.wolfHolePts || 8;
-    // Do not add front/back configured values — wolf hole entry is the sole source
-  } else if (h <= 8) {
-    basePts = G.ptsFront;
+    // Wolf hole manual entry is the sole source — ignore front/back pts
+  } else if (playIdx < 8) {
+    basePts = G.ptsFront; // play positions 1-8
   } else {
-    basePts = G.ptsBack;
+    basePts = G.ptsBack;  // play positions 9 to wolf hole
   }
 
   holeState = {
@@ -1673,17 +1824,21 @@ function showHoleResult(type, msg, deltas, wolfTeam, opponents, totalPts, mult) 
   const nextWrap = document.getElementById('next-hole-wrap');
   nextWrap.style.display = 'block';
   const nextBtn = document.getElementById('next-hole-btn');
-  if (G.currentHole >= 18) {
+  const lastHole = holeAtIndex(17);
+  if (G.currentHole === lastHole) {
     nextBtn.textContent = '🏁 View Final Scores';
     nextBtn.onclick = function() { G.gameOver = true; saveGame(); showScreen('screen-scores'); renderScoreboard(); };
   } else {
-    nextBtn.textContent = 'Next Hole (' + (G.currentHole+1) + ') →';
+    const nextHoleNum = holeAtIndex(holePlayIndex(G.currentHole) + 1);
+    nextBtn.textContent = 'Next Hole (' + nextHoleNum + ') →';
+    nextBtn.onclick = function() { nextHole(); };
   }
 }
 
 function nextHole() {
-  if (G.currentHole >= 18) return;
-  G.currentHole++;
+  const lastHole = holeAtIndex(17);
+  if (G.currentHole === lastHole) return;
+  G.currentHole = holeAtIndex(holePlayIndex(G.currentHole) + 1);
   holeState = {};
   renderHole();
   window.scrollTo(0,0);
@@ -1733,7 +1888,7 @@ function renderScoreboard() {
         ? `★ Solo — ${G.players[s.soloIdx]}`
         : (MULT_LABELS[MULT_KEYS.indexOf(s.mode)] || s.mode);
       const resultIcon = s.result==='wolf-wins'?'🐺':s.result==='solo-wins'?'★':s.result==='opponents-win'||s.result==='solo-lost'?'⚔️':'🤝';
-      const isWolfHole = s.hole >= G.wolfHole;
+      const isWolfHole = (holePlayIndex(s.hole) + 1) >= G.wolfHole;
       // Disable edit on current hole — must click Next Hole first
       const isCurrentHole = s.hole === G.currentHole && !G.gameOver;
       const editBtn = isCurrentHole
@@ -1781,7 +1936,7 @@ function computeHolePayout(s, carryoverIn) {
     if (isSolo ? i !== soloIdx : !wolfTeam.includes(i)) opponents.push(i);
   }
 
-  const isWolfHole = s.hole >= G.wolfHole;
+  const isWolfHole = (holePlayIndex(s.hole) + 1) >= G.wolfHole;
   const effectiveCarryover = isWolfHole ? 0 : carryoverIn;
   const multKey = isSolo ? 'loneAfterAll' : s.mode;
   const activeMults = G.multipliers || MULTIPLIERS;
@@ -1920,7 +2075,7 @@ function startEditHole(si) {
   }
 
   const curMult = s.holeDoubles || 0;
-  const isWolfHole = s.hole >= G.wolfHole;
+  const isWolfHole = (holePlayIndex(s.hole) + 1) >= G.wolfHole;
 
   // Wolf holes allow editing the base point value too
   const wolfHolePtsRow = isWolfHole ? `
@@ -2175,7 +2330,7 @@ function saveEditHole(si) {
 function refreshHoleScreenAfterEdit() {
   const h = G.currentHole;
   const n = G.numPlayers;
-  const isWolfHole = h >= G.wolfHole;
+  const isWolfHole = (holePlayIndex(h) + 1) >= G.wolfHole;
   const displayCarryover = isWolfHole ? 0 : G.carryover;
 
   // ── Re-determine wolf on wolf holes (points may have changed after edit) ─
@@ -2292,19 +2447,22 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  // Always re-render player inputs when setup screen is shown
+  if (id === 'screen-setup') updateSetup();
   if (id === 'screen-hole') document.getElementById('nav-hole').classList.add('active');
   if (id === 'screen-scores') document.getElementById('nav-scores').classList.add('active');
   if (id === 'screen-courses') { const nc = document.getElementById('nav-courses'); if(nc) nc.classList.add('active'); }
   if (id === 'screen-scorecard') { const ns = document.getElementById('nav-scorecard'); if(ns) ns.classList.add('active'); }
+  if (id === 'screen-settings') { const ns2 = document.getElementById('nav-settings'); if(ns2) ns2.classList.add('active'); }
 }
 
 function newGame() {
   clearSave();
   G = {};
   document.getElementById('main-nav').style.display = 'none';
-  showScreen('screen-setup');
-  // Reset resume banner in case
   document.getElementById('resume-banner').style.display = 'none';
+  showScreen('screen-setup');
+  updateSetup();
 }
 
 // ===================== COURSE LIBRARY =====================
@@ -2418,6 +2576,7 @@ function onTeeSelect() {
   const ti = document.getElementById('cfg-tee-select').value;
   if (ci === '' || ti === '') { toggleHcpSection(false); return; }
   const tee = getCourses()[parseInt(ci)].tees[parseInt(ti)];
+  window._pendingTeeRef = {courseIdx: parseInt(ci), teeIdx: parseInt(ti)};
   // Load hole ratings
   buildHcpGrid();
   for (let h = 1; h <= 18; h++) {
@@ -2595,6 +2754,229 @@ function closeCourseLibrary() {
   showScreen('screen-setup');
 }
 
+// ===================== SETTINGS =====================
+function renderSettings() {
+  const n = G.numPlayers;
+  const holesPlayed = G.scores.length;
+
+  // Course / Starting Hole section — lock inputs individually after first hole
+  const courseLocked = holesPlayed > 0;
+  const chip = document.getElementById('settings-course-chip');
+  chip.textContent = courseLocked ? 'locked after first hole' : 'editable';
+  // Lock individual fields rather than whole card so dropdowns remain visible
+  const lockIds = ['settings-start-hole', 'settings-course-name', 'settings-course-select', 'settings-tee-select'];
+  lockIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.disabled = courseLocked;
+      el.style.opacity = courseLocked ? '0.6' : '1';
+    }
+  });
+  if (courseLocked) {
+    // Still show tee row so current selection is visible
+    document.getElementById('settings-tee-row').style.display = 'flex';
+  }
+
+  // Starting hole
+  document.getElementById('settings-start-hole').value = G.startingHole || 1;
+
+  // Course name — always show current, always editable
+  document.getElementById('settings-course-name').value = G.course || '';
+
+  // Course selector — populate from library
+  const courseSel = document.getElementById('settings-course-select');
+  courseSel.innerHTML = '<option value="">— Select from library —</option>';
+  getCourses().forEach((c, ci) => {
+    const opt = document.createElement('option');
+    opt.value = ci;
+    opt.textContent = c.name;
+    if (G.teeRef && G.teeRef.courseIdx === ci) opt.selected = true;
+    courseSel.appendChild(opt);
+  });
+
+  // Tee dropdown — show only if a course is selected from library
+  const teeRow = document.getElementById('settings-tee-row');
+  const teeSel = document.getElementById('settings-tee-select');
+  if (G.teeRef && G.teeRef.courseIdx >= 0) {
+    teeRow.style.display = 'flex';
+    populateSettingsTees(G.teeRef.courseIdx, G.teeRef.teeIdx >= 0 ? G.teeRef.teeIdx : -1);
+    // Re-apply disabled state after populating
+    if (courseLocked) teeSel.disabled = true;
+  } else {
+    teeRow.style.display = 'none';
+    teeSel.innerHTML = '<option value="">— Select tee —</option>';
+  }
+
+  // Players & handicaps
+  const playersList = document.getElementById('settings-players-list');
+  playersList.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)';
+    if (i === n-1) row.style.borderBottom = 'none';
+    row.innerHTML = '<div class="player-num">' + (i+1) + '</div>'
+      + '<input type="text" placeholder="Player ' + (i+1) + '" value="' + (G.players[i]||'') + '" id="settings-player-' + i + '" style="flex:1">'
+      + '<input type="number" min="0" max="36" placeholder="HCP" value="' + (G.handicaps[i]||0) + '" id="settings-hcp-' + i + '" style="width:70px;text-align:center;flex-shrink:0">';
+    playersList.appendChild(row);
+  }
+
+  // Point values
+  document.getElementById('settings-wolf-hole').value = G.wolfHole || 17;
+
+  // Auto-update wolf hole when start hole changes (only if unlocked)
+  const startHoleEl = document.getElementById('settings-start-hole');
+  if (startHoleEl && !courseLocked) {
+    startHoleEl.oninput = function() {
+      const h = Math.max(1, Math.min(18, parseInt(this.value)||1));
+      const wolfEl = document.getElementById('settings-wolf-hole');
+      if (wolfEl) wolfEl.value = ((h - 1 + 16) % 18) + 1;
+    };
+  }
+  document.getElementById('settings-pts-front').value = G.ptsFront || 2;
+  document.getElementById('settings-pts-back').value  = G.ptsBack  || 4;
+
+  // Multipliers
+  const body = document.getElementById('settings-mult-body');
+  const activeMults = G.multipliers || MULTIPLIERS;
+  let html = '';
+  MULT_KEYS.forEach((k, ki) => {
+    html += '<tr><td style="text-align:left;font-size:11px;padding:4px 2px;color:var(--muted)">' + MULT_LABELS[ki] + '</td>';
+    [0,1,2,3].forEach(ci => {
+      const v = activeMults[k] ? activeMults[k][ci] : null;
+      const isNull = DEFAULT_MULTIPLIERS[k][ci] === null;
+      if (isNull) {
+        html += '<td class="na" style="color:var(--border)">—</td>';
+      } else {
+        html += '<td><input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="2"'
+          + ' id="smult-' + k + '-' + ci + '" value="' + (v !== null ? v : '') + '"'
+          + ' style="width:36px;text-align:center;padding:3px 2px;font-size:13px;font-weight:600;'
+          + 'background:transparent;border:1px solid var(--border);border-radius:4px;'
+          + 'color:var(--text);font-family:\'DM Mono\',monospace"></td>';
+      }
+    });
+    html += '</tr>';
+  });
+  body.innerHTML = html;
+}
+
+function populateSettingsTees(courseIdx, selectedTeeIdx) {
+  const courses = getCourses();
+  const teeSel = document.getElementById('settings-tee-select');
+  teeSel.innerHTML = '<option value="">— Select tee —</option>';
+  if (courses[courseIdx]) {
+    courses[courseIdx].tees.forEach((t, ti) => {
+      const opt = document.createElement('option');
+      opt.value = ti;
+      opt.textContent = t.name + (t.yardage ? ' (' + t.yardage + ' yds)' : '');
+      if (ti === selectedTeeIdx) opt.selected = true;
+      teeSel.appendChild(opt);
+    });
+  }
+}
+
+function onSettingsCourseSelect() {
+  const ci = parseInt(document.getElementById('settings-course-select').value);
+  const courses = getCourses();
+  const teeRow = document.getElementById('settings-tee-row');
+  if (isNaN(ci) || !courses[ci]) {
+    teeRow.style.display = 'none';
+    G.teeRef = null;
+    return;
+  }
+  // Fill course name field
+  const nameEl = document.getElementById('settings-course-name');
+  if (!nameEl.value.trim() || (G.teeRef && getCourses()[G.teeRef.courseIdx]?.name === nameEl.value.trim())) {
+    nameEl.value = courses[ci].name;
+  }
+  // Show tee row with this course's tees
+  teeRow.style.display = 'flex';
+  populateSettingsTees(ci, -1); // no pre-selection until tee picked
+  G.teeRef = {courseIdx: ci, teeIdx: -1};
+}
+
+function onSettingsTeeSelect() {
+  const ci = G.teeRef ? G.teeRef.courseIdx : -1;
+  const ti = parseInt(document.getElementById('settings-tee-select').value);
+  if (ci < 0 || isNaN(ti)) return;
+  const courses = getCourses();
+  if (!courses[ci] || !courses[ci].tees[ti]) return;
+  const tee = courses[ci].tees[ti];
+  const nameEl = document.getElementById('settings-course-name');
+  if (!nameEl.value.trim()) nameEl.value = courses[ci].name;
+  G.teeRef = {courseIdx: ci, teeIdx: ti};
+  G.holeRatings = tee.ratings.length === 18 ? [...tee.ratings] : Array.from({length:18},(_,i)=>i+1);
+}
+
+function saveSettings() {
+  const n = G.numPlayers;
+  const holesPlayed = G.scores.length;
+
+  // Course & starting hole (only if not locked)
+  if (holesPlayed === 0) {
+    G.course = document.getElementById('settings-course-name').value.trim() || G.course;
+    const newStart = Math.max(1, Math.min(18, parseInt(document.getElementById('settings-start-hole').value)||1));
+    if (newStart !== G.startingHole) {
+      G.startingHole = newStart;
+      G.currentHole  = newStart;
+      // Auto-update wolf hole to 17th in new sequence if not manually changed
+      const autoWolfHole = ((newStart - 1 + 16) % 18) + 1;
+      G.wolfHole = parseInt(document.getElementById('settings-wolf-hole').value) || autoWolfHole;
+    }
+  }
+
+  // Players & handicaps
+  let hcpChanged = false;
+  for (let i = 0; i < n; i++) {
+    const newName = (document.getElementById('settings-player-' + i)?.value || '').trim();
+    if (newName) G.players[i] = newName;
+    const newHcp = parseInt(document.getElementById('settings-hcp-' + i)?.value) || 0;
+    if (newHcp !== G.handicaps[i]) { G.handicaps[i] = newHcp; hcpChanged = true; }
+  }
+  G.hasHandicaps = G.handicaps.some(h => h > 0);
+
+  // Point values
+  const newWolfHole = parseInt(document.getElementById('settings-wolf-hole').value) || G.wolfHole;
+  const newPtsFront = parseInt(document.getElementById('settings-pts-front').value) || G.ptsFront;
+  const newPtsBack  = parseInt(document.getElementById('settings-pts-back').value)  || G.ptsBack;
+  const pointsChanged = newWolfHole !== G.wolfHole || newPtsFront !== G.ptsFront || newPtsBack !== G.ptsBack;
+  G.wolfHole  = newWolfHole;
+  G.ptsFront  = newPtsFront;
+  G.ptsBack   = newPtsBack;
+
+  // Multipliers
+  const newMults = JSON.parse(JSON.stringify(G.multipliers || MULTIPLIERS));
+  let multsChanged = false;
+  MULT_KEYS.forEach((k) => {
+    [0,1,2,3].forEach(ci => {
+      const el = document.getElementById('smult-' + k + '-' + ci);
+      if (el) {
+        const v = parseInt(el.value);
+        const newV = (isNaN(v) || v < 1) ? null : v;
+        if (newV !== newMults[k][ci]) { newMults[k][ci] = newV; multsChanged = true; }
+      }
+    });
+  });
+  if (multsChanged) {
+    G.multipliers = newMults;
+    MULTIPLIERS = JSON.parse(JSON.stringify(newMults));
+  }
+
+  // Recalculate all completed holes if anything scoring-related changed
+  if (hcpChanged || pointsChanged || multsChanged) {
+    // Update basePts for non-wolf holes based on new config
+    G.scores.forEach(s => {
+      const pi = holePlayIndex(s.hole);
+      const isWH = (pi + 1) >= G.wolfHole;
+      if (!isWH) s.basePts = (pi < 8) ? G.ptsFront : G.ptsBack;
+    });
+    replayFromHole(0);
+  }
+
+  saveGame();
+  showScreen('screen-hole');
+  renderHole();
+}
+
 // ===================== SAVE / RESTORE =====================
 const SAVE_KEY = 'wolf_round_save';
 
@@ -2632,7 +3014,10 @@ function resumeGame() {
 
 function discardSave() {
   clearSave();
+  G = {};
   document.getElementById('resume-banner').style.display = 'none';
+  updateSetup();
+  showScreen('screen-setup');
 }
 
 // ===================== SCORECARD =====================
@@ -2796,10 +3181,30 @@ function renderScorecard() {
 }
 
 // ===================== INIT =====================
-updateSetup();
+// Ensure setup screen shows player inputs immediately
+setTimeout(function() { updateSetup(); }, 0);
 
 // Test storage immediately so warning shows on load if broken
 testStorage();
+
+// Start hole note
+(function() {
+  const el = document.getElementById('cfg-start-hole');
+  if (!el) return;
+  el.addEventListener('input', function() {
+    const h = Math.max(1, Math.min(18, parseInt(this.value)||1));
+    const note = document.getElementById('start-hole-note');
+    if (h === 1) { note.textContent = 'Plays 1 → 18'; } 
+    else {
+      const last = ((h - 2 + 18) % 18) + 1;
+      const mid  = ((h - 1 + 8) % 18) + 1;
+      note.textContent = 'Plays ' + h + ' → ' + mid + ' → ' + last;
+    }
+    // Update wolf hole default to 17th hole played
+    const wolfHoleEl = document.getElementById('cfg-wolf-hole');
+    if (wolfHoleEl) wolfHoleEl.value = ((h - 1 + 16) % 18) + 1;
+  });
+})();
 
 // Set default date to today
 document.getElementById('cfg-date').value = new Date().toISOString().slice(0,10);
@@ -2814,8 +3219,14 @@ document.getElementById('cfg-hcp-show-btn').style.display = 'block';
     const banner = document.getElementById('resume-banner');
     const info = document.getElementById('resume-info');
     const d = saved.date ? new Date(saved.date + 'T12:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}) : '';
-    info.textContent = (saved.course || 'Unknown Course') + (d ? ' · ' + d : '') + ' · Hole ' + saved.currentHole + ' of 18 · ' + saved.players.join(', ');
+    const holeNum = saved.currentHole || 1;
+    const players = (saved.players || []).join(', ');
+    info.innerHTML = '<strong>' + (saved.course || 'Unknown Course') + '</strong>'
+      + (d ? ' · ' + d : '')
+      + '<br>Hole ' + holeNum + ' of 18'
+      + (players ? '<br>Players: ' + players : '');
     banner.style.display = 'block';
+    window.scrollTo(0, 0);
   }
 })();
 </script>
