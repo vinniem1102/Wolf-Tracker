@@ -600,6 +600,7 @@
   <div class="card">
     <div class="player-inputs" id="player-name-inputs"></div>
   </div>
+  <div id="debug-box" style="background:#330000;color:#ff8888;padding:8px;border-radius:6px;font-size:11px;margin-top:8px;display:none"></div>
 
   <div class="section-label">Configuration</div>
   <div class="card">
@@ -3181,8 +3182,56 @@ function renderScorecard() {
 }
 
 // ===================== INIT =====================
-// Ensure setup screen shows player inputs immediately
-setTimeout(function() { updateSetup(); }, 0);
+function debugLog(msg) {
+  console.log(msg);
+  var db = document.getElementById('debug-box');
+  if (db) { db.style.display = 'block'; db.innerHTML += msg + '<br>'; }
+}
+
+function buildPlayerRows(n) {
+  var cont = document.getElementById('player-name-inputs');
+  if (!cont) { debugLog('ERROR: player-name-inputs not found'); return; }
+  cont.innerHTML = '';
+  for (var fi = 0; fi < n; fi++) {
+    var r = document.createElement('div');
+    r.className = 'player-row';
+    r.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:8px';
+    var num = document.createElement('div');
+    num.className = 'player-num';
+    num.textContent = fi + 1;
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.placeholder = 'Player ' + (fi + 1);
+    inp.style.flex = '1';
+    var hcp = document.createElement('input');
+    hcp.type = 'number';
+    hcp.placeholder = 'HCP';
+    hcp.style.cssText = 'width:70px;text-align:center;flex-shrink:0';
+    r.appendChild(num); r.appendChild(inp); r.appendChild(hcp);
+    cont.appendChild(r);
+  }
+  debugLog('Built ' + n + ' player rows OK');
+}
+
+setTimeout(function() {
+  debugLog('Init timeout fired');
+  try {
+    var numSel = document.getElementById('num-players');
+    debugLog('num-players found: ' + (numSel ? 'yes, value=' + numSel.value : 'NO'));
+    var cont = document.getElementById('player-name-inputs');
+    debugLog('player-name-inputs found: ' + (cont ? 'yes' : 'NO'));
+    updateSetup();
+    var rows = cont ? cont.children.length : -1;
+    debugLog('After updateSetup: ' + rows + ' rows');
+    if (rows === 0) {
+      debugLog('Fallback: building rows directly');
+      buildPlayerRows(parseInt(numSel ? numSel.value : '4') || 4);
+    }
+  } catch(e) {
+    debugLog('ERROR: ' + e.message);
+    buildPlayerRows(4);
+  }
+}, 100);
 
 // Test storage immediately so warning shows on load if broken
 testStorage();
