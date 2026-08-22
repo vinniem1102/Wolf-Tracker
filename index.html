@@ -1341,6 +1341,11 @@
 
       <div class="hole-num-display" id="hole-number-display">1</div>
 
+      <div style="display:flex;gap:12px;margin-top:4px">
+        <div><div class="hole-info-label">Par</div><div style="font-size:14px;font-weight:700" id="hole-par-display">—</div></div>
+        <div><div class="hole-info-label">Hcp</div><div style="font-size:14px;font-weight:700" id="hole-hcp-display">—</div></div>
+      </div>
+
     </div>
 
     <div class="hole-info" id="hole-info-right">
@@ -1601,6 +1606,17 @@
 
   <div id="course-list-section">
 
+    <!-- API Search -->
+    <div class="section-label">Search Courses <span class="chip">GolfCourseAPI</span></div>
+    <div class="card">
+      <div class="row" style="gap:8px">
+        <input type="text" id="api-search-input" placeholder="Course or club name..."
+          style="flex:1" onkeydown="if(event.key==='Enter') searchCourseAPI()">
+        <button class="btn btn-primary" onclick="searchCourseAPI()" style="flex-shrink:0;padding:8px 14px">Search</button>
+      </div>
+      <div id="api-search-results" style="margin-top:10px"></div>
+    </div>
+
     <div class="section-label">Saved Courses</div>
 
     <div class="card" id="course-list-card">
@@ -1609,7 +1625,7 @@
 
     </div>
 
-    <button class="btn btn-primary btn-full" onclick="showAddCourse()">+ Add New Course</button>
+    <button class="btn btn-full" onclick="showAddCourse()" style="margin-top:4px">+ Add Course Manually</button>
 
   </div>
 
@@ -1965,6 +1981,8 @@ function defaultG() {
 
     holeRatings: null,
 
+    parData: null,
+
     hasHandicaps: false,
 
     multipliers: null, // stored at game start, null = use current MULTIPLIERS
@@ -2303,7 +2321,9 @@ function startGame() {
 
   G.teeRef      = window._pendingTeeRef || null;
 
+  G.parData     = window._pendingParData || null;
   window._pendingTeeRef = null;
+  window._pendingParData = null;
 
   G.startingHole = Math.max(1, Math.min(18, parseInt(document.getElementById('cfg-start-hole').value)||1));
 
@@ -2476,6 +2496,12 @@ function renderHole() {
   document.getElementById('hole-app-sub').textContent = `Hole ${h} of 18`;
 
   document.getElementById('hole-number-display').textContent = h;
+  var parEl = document.getElementById('hole-par-display');
+  var hcpEl = document.getElementById('hole-hcp-display');
+  // Par: from imported tee data; fallback to '—'
+  if (parEl) parEl.textContent = (G.parData && G.parData[h-1] != null) ? G.parData[h-1] : '—';
+  // Hcp: from hole ratings (handicap difficulty ranking 1-18)
+  if (hcpEl) hcpEl.textContent = (G.holeRatings && G.holeRatings[h-1] != null) ? G.holeRatings[h-1] : '—';
 
   document.getElementById('wolf-name-display').textContent = G.players[wolfIdx];
 
@@ -3207,6 +3233,25 @@ function strokesOnHole(pidx, h) {
 
 
 
+function autoAdvanceScore(el, pidx, order) {
+  // Only auto-advance if field was empty before this keystroke (single digit entry)
+  if (el.value.length === 1 && el.dataset.hadValue !== 'true') {
+    holeState.scores[pidx] = parseInt(el.value) || null;
+    // Find next score input in tee order
+    const nextOrder = order + 1;
+    const nextPidx = holeState.teeOrder[nextOrder];
+    if (nextPidx !== undefined) {
+      const nextInp = document.getElementById('score-input-' + nextPidx);
+      if (nextInp && !nextInp.disabled) {
+        nextInp.focus();
+        nextInp.select();
+      }
+    }
+  }
+  // Track whether field had a value when user started editing
+  el.dataset.hadValue = el.value.length > 1 ? 'true' : 'false';
+}
+
 function renderScoreInputs() {
 
   const list = document.getElementById('score-inputs-list');
@@ -3247,7 +3292,9 @@ function renderScoreInputs() {
 
         id="score-input-${pidx}"
 
-        onchange="holeState.scores[${pidx}]=parseInt(this.value)||null">
+        onchange="holeState.scores[${pidx}]=parseInt(this.value)||null"
+
+        oninput="autoAdvanceScore(this, ${pidx}, ${order})">
 
     `;
 
@@ -3257,7 +3304,14 @@ function renderScoreInputs() {
 
     const inp = document.getElementById('score-input-' + pidx);
 
-    if (inp) inp.value = holeState.scores[pidx] != null ? holeState.scores[pidx] : '';
+    if (inp) {
+      inp.value = holeState.scores[pidx] != null ? holeState.scores[pidx] : '';
+      inp.dataset.hadValue = inp.value.length > 0 ? 'true' : 'false';
+      // Reset hadValue on focus so editing existing value doesn't auto-advance
+      inp.addEventListener('focus', function() {
+        this.dataset.hadValue = this.value.length > 0 ? 'true' : 'false';
+      });
+    }
 
   });
 
@@ -5191,6 +5245,8 @@ function onTeeSelect() {
 
   window._pendingTeeRef = {courseIdx: parseInt(ci), teeIdx: parseInt(ti)};
 
+
+  window._pendingParData = (tee && tee.pars) ? tee.pars : null;
   // Load hole ratings
 
   buildHcpGrid();
@@ -5847,6 +5903,8 @@ function onSettingsTeeSelect() {
 
   G.holeRatings = tee.ratings.length === 18 ? [...tee.ratings] : Array.from({length:18},(_,i)=>i+1);
 
+
+  G.parData = (tee && tee.pars) ? tee.pars : null;
 }
 
 
@@ -5990,6 +6048,125 @@ function saveSettings() {
 }
 
 
+
+// ===================== GOLF COURSE API =====================
+const GCAPI_KEY = '2JIUWLCCQBETK7FJYV5EFNDUIQ';
+// Replace GCAPI_PROXY with your Cloudflare Worker URL after deploying golf-proxy-worker.js
+// e.g. 'https://golf-proxy.yourname.workers.dev'
+// The worker forwards requests to golfcourseapi.com with CORS headers
+const GCAPI_PROXY = 'https://golf-proxy.vinniem1102.workers.dev';
+const GCAPI_BASE = GCAPI_PROXY + '/v1';
+
+// Cache for course names from search results
+var _apiCourseNames = {};
+
+async function searchCourseAPI() {
+  const query = (document.getElementById('api-search-input').value || '').trim();
+  if (!query) return;
+  const resultsEl = document.getElementById('api-search-results');
+  resultsEl.innerHTML = '<div style="color:var(--muted);font-size:13px">Searching...</div>';
+  try {
+    const res = await fetch(GCAPI_BASE + '/search?search_query=' + encodeURIComponent(query));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const courses = data.courses || [];
+    if (courses.length === 0) {
+      resultsEl.innerHTML = '<div style="color:var(--muted);font-size:13px">No courses found. Try a different name.</div>';
+      return;
+    }
+    // Store names in cache keyed by id
+    _apiCourseNames = {};
+    courses.forEach(function(c) { _apiCourseNames[String(c.id)] = c.course_name || c.club_name || String(c.id); });
+
+    let html = '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">' + courses.length + ' result(s) — tap Import to add to library</div>';
+    courses.slice(0, 10).forEach(function(c) {
+      const loc = c.location ? ((c.location.city || '') + (c.location.state ? ', ' + c.location.state : '')) : '';
+      const name = (_apiCourseNames[c.id] || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      html += '<div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:10px">'
+        + '<div style="flex:1">'
+        + '<div style="font-size:14px;font-weight:500">' + name + '</div>'
+        + (loc ? '<div style="font-size:12px;color:var(--muted)">' + loc + '</div>' : '')
+        + '</div>'
+        + '<button class="btn btn-sm api-import-btn" data-cid="' + c.id + '">Import</button>'
+        + '</div>';
+    });
+    resultsEl.innerHTML = html;
+    // Use event delegation — attach ONE listener to container
+    resultsEl.onclick = function(e) {
+      var btn = e.target.closest('.api-import-btn');
+      if (btn) {
+        var cid = btn.getAttribute('data-cid');
+        if (cid) importCourseFromAPI(cid);
+      }
+    };
+  } catch(e) {
+    resultsEl.innerHTML = '<div style="color:var(--red);font-size:13px">Search failed: ' + e.message + '. Check network connection.</div>';
+  }
+}
+
+async function importCourseFromAPI(courseId) {
+  const courseName = _apiCourseNames[String(courseId)] || String(courseId);
+  const resultsEl = document.getElementById('api-search-results');
+  if (resultsEl) resultsEl.innerHTML = '<div style="color:var(--muted);font-size:13px">Importing ' + courseName + '...</div>';
+  try {
+    const res = await fetch(GCAPI_BASE + '/courses/' + courseId);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const course = data.course || data;
+
+    // Build tees — API returns tees as {female: [...], male: [...]}
+    const tees = [];
+    const teeData = course.tees || {};
+
+    // Iterate gender groups (female, male) then each tee in the array
+    ['male', 'female'].forEach(function(gender) {
+      const genderTees = teeData[gender];
+      if (!Array.isArray(genderTees)) return;
+      genderTees.forEach(function(tee) {
+        if (!tee || !Array.isArray(tee.holes) || tee.holes.length < 18) return;
+        const ratings = tee.holes.slice(0, 18).map(function(h, i) {
+          return parseInt(h.handicap) || (i + 1);
+        });
+        const label = gender === 'female' ? ' (F)' : '';
+        const pars = tee.holes.slice(0, 18).map(function(h) { return parseInt(h.par) || 4; });
+        tees.push({
+          name: (tee.tee_name || 'Unknown') + label,
+          yardage: String(tee.total_yards || ''),
+          ratings: ratings,
+          pars: pars
+        });
+      });
+    });
+
+    // Fallback if no tees found
+    if (tees.length === 0) {
+      tees.push({ name: 'Default', yardage: '', ratings: Array.from({length:18}, function(_,i){ return i+1; }) });
+    }
+
+    const finalName = course.course_name || course.club_name || courseName;
+    const courseObj = { name: finalName, tees: tees };
+    const allCourses = getCourses();
+    const dupIdx = allCourses.findIndex(function(c) { return c.name === finalName; });
+    if (dupIdx >= 0) allCourses[dupIdx] = courseObj;
+    else allCourses.push(courseObj);
+    saveCourses(allCourses);
+    populateCourseSelector();
+
+    const msg = tees.length === 1 && tees[0].name === 'Default'
+      ? '⚠ Imported "' + finalName + '" but no tee data found — please edit tees manually.'
+      : '✓ Imported "' + finalName + '" with ' + tees.length + ' tee(s).';
+    const msgColor = tees[0].name === 'Default' ? '#e8a020' : 'var(--green)';
+
+    // Re-render library then restore message
+    renderCourseLibrary();
+    const resultsEl2 = document.getElementById('api-search-results');
+    if (resultsEl2) resultsEl2.innerHTML = '<div style="color:' + msgColor + ';font-size:13px">' + msg + '</div>';
+
+  } catch(e) {
+    const re = document.getElementById('api-search-results');
+    if (re) re.innerHTML = '<div style="color:var(--red);font-size:13px">Import failed: ' + e.message + '</div>';
+  }
+}
 
 // ===================== SAVE / RESTORE =====================
 
