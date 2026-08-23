@@ -1133,26 +1133,6 @@
 
       </div>
 
-      <div class="row" style="align-items:flex-start">
-
-        <label class="text-sm" style="min-width:100px;color:var(--muted);padding-top:8px">Search</label>
-
-        <div style="flex:1;display:flex;flex-direction:column;gap:6px">
-
-          <div style="display:flex;gap:6px">
-
-            <input type="text" id="cfg-course-search" placeholder="Search course or club name" onkeydown="if(event.key==='Enter'){event.preventDefault();searchCourses('cfg');}">
-
-            <button class="btn btn-sm" onclick="searchCourses('cfg')" style="flex-shrink:0">Search</button>
-
-          </div>
-
-          <div id="cfg-course-search-results" style="display:none"></div>
-
-        </div>
-
-      </div>
-
       <div class="row">
 
         <label class="text-sm" style="min-width:100px;color:var(--muted)">Course Name</label>
@@ -1797,9 +1777,9 @@
 
             <div style="display:flex;gap:6px">
 
-              <input type="text" id="settings-course-search" placeholder="Search course or club name" onkeydown="if(event.key==='Enter'){event.preventDefault();searchCourses('settings');}">
+              <input type="text" id="settings-course-search" placeholder="Search course or club name" onkeydown="if(event.key==='Enter'){event.preventDefault();searchCourses();}">
 
-              <button class="btn btn-sm" onclick="searchCourses('settings')" style="flex-shrink:0">Search</button>
+              <button class="btn btn-sm" onclick="searchCourses()" style="flex-shrink:0">Search</button>
 
             </div>
 
@@ -5315,11 +5295,31 @@ function escapeHtml(s) {
 
 
 
-async function searchCourses(scope) {
+// Clubs with multiple courses (e.g. "Pinehurst Cc" No. 1 / No. 6 / No. 8) share
 
-  const input = document.getElementById(scope + '-course-search');
+// a club_name but have distinct course_name values — combine them so each is
 
-  const resultsEl = document.getElementById(scope + '-course-search-results');
+// unambiguous both in the search results and in the saved course library.
+
+function gcapiDisplayName(c) {
+
+  const club = (c.club_name || '').trim();
+
+  const course = (c.course_name || '').trim();
+
+  if (club && course && club !== course) return club + ' — ' + course;
+
+  return club || course || 'Imported Course';
+
+}
+
+
+
+async function searchCourses() {
+
+  const input = document.getElementById('settings-course-search');
+
+  const resultsEl = document.getElementById('settings-course-search-results');
 
   const query = input.value.trim();
 
@@ -5351,19 +5351,17 @@ async function searchCourses(scope) {
 
       const loc = c.location ? [c.location.city, c.location.state].filter(Boolean).join(', ') : '';
 
-      const sub = [c.course_name, loc].filter(Boolean).join(' · ');
-
       return '<div class="course-item">'
 
         + '<div style="flex:1">'
 
-        + '<div style="font-size:14px;font-weight:500">' + escapeHtml(c.club_name || c.course_name) + '</div>'
+        + '<div style="font-size:14px;font-weight:500">' + escapeHtml(gcapiDisplayName(c)) + '</div>'
 
-        + '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + escapeHtml(sub) + '</div>'
+        + '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + escapeHtml(loc) + '</div>'
 
         + '</div>'
 
-        + '<button class="btn btn-sm" onclick="importCourse(\'' + c.id + '\',\'' + scope + '\')">Import</button>'
+        + '<button class="btn btn-sm" onclick="importCourse(\'' + c.id + '\')">Import</button>'
 
         + '</div>';
 
@@ -5379,9 +5377,9 @@ async function searchCourses(scope) {
 
 
 
-async function importCourse(id, scope) {
+async function importCourse(id) {
 
-  const resultsEl = document.getElementById(scope + '-course-search-results');
+  const resultsEl = document.getElementById('settings-course-search-results');
 
   resultsEl.innerHTML = '<div class="text-muted text-sm" style="padding:6px 0">Importing…</div>';
 
@@ -5423,7 +5421,7 @@ async function importCourse(id, scope) {
 
 
 
-    const courseName = c.club_name || c.course_name || 'Imported Course';
+    const courseName = gcapiDisplayName(c);
 
     const courses = getCourses();
 
@@ -5441,41 +5439,29 @@ async function importCourse(id, scope) {
 
 
 
-    if (scope === 'cfg') {
+    const holesPlayed = G.scores ? G.scores.length : 0;
 
-      populateCourseSelector();
+    const courseSel = document.getElementById('settings-course-select');
 
-      document.getElementById('cfg-course-select').value = idx;
+    courseSel.innerHTML = '<option value="">— Select from library —</option>';
 
-      onCourseSelect();
+    getCourses().forEach((cc, ci) => {
 
-    } else if (scope === 'settings') {
+      const opt = document.createElement('option');
 
-      const holesPlayed = G.scores ? G.scores.length : 0;
+      opt.value = ci;
 
-      const courseSel = document.getElementById('settings-course-select');
+      opt.textContent = cc.name;
 
-      courseSel.innerHTML = '<option value="">— Select from library —</option>';
+      courseSel.appendChild(opt);
 
-      getCourses().forEach((cc, ci) => {
+    });
 
-        const opt = document.createElement('option');
+    if (holesPlayed === 0) {
 
-        opt.value = ci;
+      courseSel.value = idx;
 
-        opt.textContent = cc.name;
-
-        courseSel.appendChild(opt);
-
-      });
-
-      if (holesPlayed === 0) {
-
-        courseSel.value = idx;
-
-        onSettingsCourseSelect();
-
-      }
+      onSettingsCourseSelect();
 
     }
 
