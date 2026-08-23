@@ -831,6 +831,10 @@
 
     background: var(--gold); vertical-align: super; margin-left: 1px; }
 
+  .sc-winner-score { display: inline-block; min-width: 16px; border-radius: 50%;
+
+    border: 1.5px solid var(--gold); color: var(--gold); padding: 0 2px; }
+
   @media (prefers-color-scheme: light) {
 
     .sc-table .sc-label, .sc-table .sc-player-label { background: var(--bg); }
@@ -6676,6 +6680,8 @@ function renderHistory() {
 
       const d = r.date ? new Date(r.date + 'T12:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}) : '';
 
+      const t = r.savedAt ? new Date(r.savedAt).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}) : '';
+
       const n = (r.state && r.state.players) ? r.state.players.length : (r.players||[]).length;
 
       return '<div class="course-item">'
@@ -6684,7 +6690,7 @@ function renderHistory() {
 
         + '<div style="font-size:14px;font-weight:500">' + r.course + '</div>'
 
-        + '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + (d ? d + ' · ' : '') + n + ' players</div>'
+        + '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + (d ? d + ' · ' : '') + (t ? t + ' · ' : '') + n + ' players</div>'
 
         + '</div>'
 
@@ -6890,6 +6896,18 @@ function buildHistoryScorecardHtml(state) {
 
 
 
+  const minGrossByHole = {};
+
+  Object.keys(byHole).forEach(h => {
+
+    const s = byHole[h];
+
+    if (s && s.grossScores) minGrossByHole[h] = Math.min(...s.grossScores);
+
+  });
+
+
+
   function roleChar(s, pidx) {
 
     if (!s) return '';
@@ -7074,7 +7092,13 @@ function buildHistoryScorecardHtml(state) {
 
         : '';
 
-      html += '<td>' + gross + dotHtml + '</td>';
+      const grossHtml = (minGrossByHole[h] != null && gross === minGrossByHole[h])
+
+        ? '<span class="sc-winner-score">' + gross + '</span>'
+
+        : gross;
+
+      html += '<td>' + grossHtml + dotHtml + '</td>';
 
       if (idx < 9) { outScore += gross; hasOut = true; }
 
@@ -7156,9 +7180,11 @@ function openHistoryDetail(id) {
 
   const d = state.date ? new Date(state.date + 'T12:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'}) : '';
 
+  const t = entry.savedAt ? new Date(entry.savedAt).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}) : '';
+
   document.getElementById('hd-course').textContent = '⛳ ' + (state.course || '');
 
-  document.getElementById('hd-date').textContent = d + ' · ' + state.players.length + ' players';
+  document.getElementById('hd-date').textContent = d + (t ? ' · ' + t : '') + ' · ' + state.players.length + ' players';
 
   document.getElementById('hd-ledger').innerHTML = buildHistoryLedgerHtml(state);
 
@@ -7191,6 +7217,20 @@ function renderScorecard() {
   const byHole = {};
 
   G.scores.forEach(s => { byHole[s.hole] = s; });
+
+
+
+  // Lowest gross score per hole, to highlight the winning score(s) — ties share it
+
+  const minGrossByHole = {};
+
+  Object.keys(byHole).forEach(h => {
+
+    const s = byHole[h];
+
+    if (s && s.grossScores) minGrossByHole[h] = Math.min(...s.grossScores);
+
+  });
 
 
 
@@ -7418,7 +7458,13 @@ function renderScorecard() {
 
         : '';
 
-      html += '<td>' + gross + dotHtml + '</td>';
+      const grossHtml = (minGrossByHole[h] != null && gross === minGrossByHole[h])
+
+        ? '<span class="sc-winner-score">' + gross + '</span>'
+
+        : gross;
+
+      html += '<td>' + grossHtml + dotHtml + '</td>';
 
       if (idx < 9) { outScore += gross; hasOut = true; }
 
