@@ -1383,6 +1383,11 @@
 
       <div class="hole-num-display" id="hole-number-display">1</div>
 
+      <div style="display:flex;gap:12px;margin-top:4px">
+        <div><div class="hole-info-label">Par</div><div style="font-size:14px;font-weight:700" id="hole-par-display">—</div></div>
+        <div><div class="hole-info-label">Hcp</div><div style="font-size:14px;font-weight:700" id="hole-hcp-display">—</div></div>
+      </div>
+
     </div>
 
     <div class="hole-info" id="hole-info-right">
@@ -2139,6 +2144,8 @@ function defaultG() {
 
     gameOver: false,
 
+    parData: null, // per-hole par, from imported tee data (index 0 = hole 1)
+
   };
 
 }
@@ -2461,6 +2468,10 @@ function startGame() {
 
   window._pendingTeeRef = null;
 
+  G.parData     = window._pendingParData || null;
+
+  window._pendingParData = null;
+
   G.startingHole = Math.max(1, Math.min(18, parseInt(document.getElementById('cfg-start-hole').value)||1));
 
   G.currentHole  = G.startingHole;
@@ -2632,6 +2643,14 @@ function renderHole() {
   document.getElementById('hole-app-sub').textContent = `Hole ${h} of 18`;
 
   document.getElementById('hole-number-display').textContent = h;
+
+  const parEl = document.getElementById('hole-par-display');
+
+  const hcpEl = document.getElementById('hole-hcp-display');
+
+  if (parEl) parEl.textContent = (G.parData && G.parData[h-1] != null) ? G.parData[h-1] : '—';
+
+  if (hcpEl) hcpEl.textContent = (G.holeRatings && G.holeRatings[h-1] != null) ? G.holeRatings[h-1] : '—';
 
   document.getElementById('wolf-name-display').textContent = G.players[wolfIdx];
 
@@ -5271,19 +5290,13 @@ function saveCourses(courses) {
 
 // ===================== GOLF COURSE SEARCH / IMPORT =====================
 
-// Uses GolfCourseAPI (golfcourseapi.com) directly from the browser — the API
+// Routed through a Cloudflare Worker (golf-proxy-worker.js, deployed at the
 
-// sends permissive CORS headers so no server-side proxy is needed. The key
+// URL below) rather than calling golfcourseapi.com directly — the worker
 
-// below is embedded client-side and will be visible to anyone who views the
+// holds the API key server-side, so it never appears in this page's source.
 
-// page source; rotate it at golfcourseapi.com if this app is ever made public
-
-// and that becomes a concern.
-
-const GCAPI_BASE = 'https://api.golfcourseapi.com';
-
-const GCAPI_KEY = '2JIUWLCCQBETK7FJYV5EFNDUIQ';
+const GCAPI_BASE = 'https://golf-proxy.vinniem1102.workers.dev/v1';
 
 
 
@@ -5331,9 +5344,9 @@ async function searchCourses() {
 
   try {
 
-    const res = await fetch(GCAPI_BASE + '/v1/search?search_query=' + encodeURIComponent(query), { headers: { Authorization: 'Key ' + GCAPI_KEY } });
+    const res = await fetch(GCAPI_BASE + '/search?search_query=' + encodeURIComponent(query));
 
-    if (!res.ok) throw new Error(res.status === 401 ? 'API key rejected' : 'Search failed (' + res.status + ')');
+    if (!res.ok) throw new Error('Search failed (' + res.status + ')');
 
     const data = await res.json();
 
@@ -5385,9 +5398,9 @@ async function importCourse(id) {
 
   try {
 
-    const res = await fetch(GCAPI_BASE + '/v1/courses/' + id, { headers: { Authorization: 'Key ' + GCAPI_KEY } });
+    const res = await fetch(GCAPI_BASE + '/courses/' + id);
 
-    if (!res.ok) throw new Error(res.status === 401 ? 'API key rejected' : 'Import failed (' + res.status + ')');
+    if (!res.ok) throw new Error('Import failed (' + res.status + ')');
 
     const data = await res.json();
 
@@ -5407,6 +5420,8 @@ async function importCourse(id) {
 
       ratings: (t.holes && t.holes.length === 18) ? t.holes.map(h => h.handicap) : Array.from({length:18},(_,i)=>i+1),
 
+      pars: (t.holes && t.holes.length === 18) ? t.holes.map(h => h.par) : null,
+
     });
 
     const tees = [
@@ -5417,7 +5432,7 @@ async function importCourse(id) {
 
     ];
 
-    if (tees.length === 0) tees.push({ name: 'Default', yardage: '', ratings: Array.from({length:18},(_,i)=>i+1) });
+    if (tees.length === 0) tees.push({ name: 'Default', yardage: '', ratings: Array.from({length:18},(_,i)=>i+1), pars: null });
 
 
 
@@ -5562,6 +5577,8 @@ function onTeeSelect() {
   const tee = getCourses()[parseInt(ci)].tees[parseInt(ti)];
 
   window._pendingTeeRef = {courseIdx: parseInt(ci), teeIdx: parseInt(ti)};
+
+  window._pendingParData = (tee && tee.pars) ? tee.pars : null;
 
   // Load hole ratings
 
@@ -6218,6 +6235,8 @@ function onSettingsTeeSelect() {
   G.teeRef = {courseIdx: ci, teeIdx: ti};
 
   G.holeRatings = tee.ratings.length === 18 ? [...tee.ratings] : Array.from({length:18},(_,i)=>i+1);
+
+  G.parData = (tee && tee.pars) ? tee.pars : null;
 
 }
 
