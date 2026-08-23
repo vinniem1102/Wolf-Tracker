@@ -1365,7 +1365,7 @@
 
     <div style="margin-left:auto;display:flex;gap:6px">
 
-      <button class="btn btn-sm" onclick="showScreen('screen-scores')" >Scores ↗</button>
+      <button class="btn btn-sm" onclick="showScreen('screen-scores');renderScoreboard()" >Scores ↗</button>
 
     </div>
 
@@ -3444,7 +3444,9 @@ function renderScoreInputs() {
 
         id="score-input-${pidx}"
 
-        onchange="holeState.scores[${pidx}]=parseInt(this.value)||null">
+        oninput="holeState.scores[${pidx}]=parseInt(this.value)||null; if(this.value.length>=2) advanceScoreInput(${order});"
+
+        onchange="holeState.scores[${pidx}]=parseInt(this.value)||null; advanceScoreInput(${order});">
 
     `;
 
@@ -3457,6 +3459,30 @@ function renderScoreInputs() {
     if (inp) inp.value = holeState.scores[pidx] != null ? holeState.scores[pidx] : '';
 
   });
+
+}
+
+
+
+// Moves focus to the next player's score input in tee-off order, but only if
+
+// that field is still empty — if it already holds a score (e.g. re-entering
+
+// an earlier player mid-review), leave focus where the user put it.
+
+function advanceScoreInput(fromOrder) {
+
+  const nextOrder = fromOrder + 1;
+
+  if (nextOrder >= holeState.teeOrder.length) return;
+
+  const nextIdx = holeState.teeOrder[nextOrder];
+
+  if (holeState.scores[nextIdx] != null) return;
+
+  const nextInp = document.getElementById('score-input-' + nextIdx);
+
+  if (nextInp) nextInp.focus();
 
 }
 
