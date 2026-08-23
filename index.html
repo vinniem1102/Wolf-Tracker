@@ -3444,9 +3444,9 @@ function renderScoreInputs() {
 
         id="score-input-${pidx}"
 
-        oninput="holeState.scores[${pidx}]=parseInt(this.value)||null; if(this.value.length>=2) advanceScoreInput(${order});"
+        oninput="scoreInputOnInput(${pidx}, ${order}, this)"
 
-        onchange="holeState.scores[${pidx}]=parseInt(this.value)||null; advanceScoreInput(${order});">
+        onchange="scoreInputCancelTimer(${pidx}); holeState.scores[${pidx}]=parseInt(this.value)||null; advanceScoreInput(${order});">
 
     `;
 
@@ -3483,6 +3483,52 @@ function advanceScoreInput(fromOrder) {
   const nextInp = document.getElementById('score-input-' + nextIdx);
 
   if (nextInp) nextInp.focus();
+
+}
+
+
+
+// Most hole scores are a single digit, so advancing only once 2 digits are
+
+// typed makes the common case feel unresponsive. Advance after 1 digit too,
+
+// but wait briefly first in case a second digit (a 10+ score) is on the way —
+
+// a fresh keystroke or reaching 2 digits cancels the wait and moves on.
+
+let _scoreAdvanceTimers = {};
+
+
+
+function scoreInputCancelTimer(pidx) {
+
+  if (_scoreAdvanceTimers[pidx]) { clearTimeout(_scoreAdvanceTimers[pidx]); delete _scoreAdvanceTimers[pidx]; }
+
+}
+
+
+
+function scoreInputOnInput(pidx, order, el) {
+
+  scoreInputCancelTimer(pidx);
+
+  holeState.scores[pidx] = parseInt(el.value) || null;
+
+  if (el.value.length >= 2) {
+
+    advanceScoreInput(order);
+
+  } else if (el.value.length === 1) {
+
+    _scoreAdvanceTimers[pidx] = setTimeout(function() {
+
+      delete _scoreAdvanceTimers[pidx];
+
+      if (el.value.length === 1) advanceScoreInput(order);
+
+    }, 450);
+
+  }
 
 }
 
