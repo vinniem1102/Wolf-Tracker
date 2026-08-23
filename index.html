@@ -3444,9 +3444,11 @@ function renderScoreInputs() {
 
         id="score-input-${pidx}"
 
+        onfocus="scoreInputOnFocus(${pidx})"
+
         oninput="scoreInputOnInput(${pidx}, ${order}, this)"
 
-        onchange="scoreInputCancelTimer(${pidx}); holeState.scores[${pidx}]=parseInt(this.value)||null; advanceScoreInput(${order});">
+        onchange="holeState.scores[${pidx}]=parseInt(this.value)||null;">
 
     `;
 
@@ -3488,21 +3490,25 @@ function advanceScoreInput(fromOrder) {
 
 
 
-// Most hole scores are a single digit, so advancing only once 2 digits are
+// Second digits (10+ on a hole) are rare, so don't make every entry wait for
 
-// typed makes the common case feel unresponsive. Advance after 1 digit too,
+// one. On first-time entry (field was empty when focused) advance as soon as
 
-// but wait briefly first in case a second digit (a 10+ score) is on the way —
+// a digit is typed — no waiting. If a score needs correcting to two digits,
 
-// a fresh keystroke or reaching 2 digits cancels the wait and moves on.
+// tap back into that field and retype it; a field that already had a score
 
-let _scoreAdvanceTimers = {};
+// when focused is a correction, not a first-time entry, so typing there
+
+// doesn't yank focus away.
+
+let _scoreFieldWasEmpty = {};
 
 
 
-function scoreInputCancelTimer(pidx) {
+function scoreInputOnFocus(pidx) {
 
-  if (_scoreAdvanceTimers[pidx]) { clearTimeout(_scoreAdvanceTimers[pidx]); delete _scoreAdvanceTimers[pidx]; }
+  _scoreFieldWasEmpty[pidx] = (holeState.scores[pidx] == null);
 
 }
 
@@ -3510,23 +3516,13 @@ function scoreInputCancelTimer(pidx) {
 
 function scoreInputOnInput(pidx, order, el) {
 
-  scoreInputCancelTimer(pidx);
-
   holeState.scores[pidx] = parseInt(el.value) || null;
 
-  if (el.value.length >= 2) {
+  if (_scoreFieldWasEmpty[pidx] && el.value.length >= 1) {
+
+    _scoreFieldWasEmpty[pidx] = false;
 
     advanceScoreInput(order);
-
-  } else if (el.value.length === 1) {
-
-    _scoreAdvanceTimers[pidx] = setTimeout(function() {
-
-      delete _scoreAdvanceTimers[pidx];
-
-      if (el.value.length === 1) advanceScoreInput(order);
-
-    }, 450);
 
   }
 
