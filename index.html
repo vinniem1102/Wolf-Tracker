@@ -1656,6 +1656,28 @@
 
   <div id="course-list-section">
 
+    <div class="section-label">Search Courses <span class="chip">GolfCourseAPI</span></div>
+
+    <div class="card">
+
+      <form onsubmit="event.preventDefault();searchCourses('courses');">
+
+        <div style="display:flex;gap:6px">
+
+          <input type="search" id="courses-course-search" placeholder="Search course or club name">
+
+          <button type="submit" class="btn btn-sm" style="flex-shrink:0">Search</button>
+
+        </div>
+
+      </form>
+
+      <div id="courses-course-search-results" style="display:none;margin-top:8px"></div>
+
+    </div>
+
+
+
     <div class="section-label">Saved Courses</div>
 
     <div class="card" id="course-list-card">
@@ -1780,7 +1802,7 @@
 
           <div style="flex:1;display:flex;flex-direction:column;gap:6px">
 
-            <form style="display:flex;gap:6px" onsubmit="event.preventDefault();searchCourses();">
+            <form style="display:flex;gap:6px" onsubmit="event.preventDefault();searchCourses('settings');">
 
               <input type="search" id="settings-course-search" placeholder="Search course or club name">
 
@@ -5328,11 +5350,11 @@ function gcapiDisplayName(c) {
 
 
 
-async function searchCourses() {
+async function searchCourses(scope) {
 
-  const input = document.getElementById('settings-course-search');
+  const input = document.getElementById(scope + '-course-search');
 
-  const resultsEl = document.getElementById('settings-course-search-results');
+  const resultsEl = document.getElementById(scope + '-course-search-results');
 
   const query = input.value.trim();
 
@@ -5374,7 +5396,7 @@ async function searchCourses() {
 
         + '</div>'
 
-        + '<button class="btn btn-sm" onclick="importCourse(\'' + c.id + '\')">Import</button>'
+        + '<button class="btn btn-sm" onclick="importCourse(\'' + c.id + '\',\'' + scope + '\')">Import</button>'
 
         + '</div>';
 
@@ -5390,9 +5412,9 @@ async function searchCourses() {
 
 
 
-async function importCourse(id) {
+async function importCourse(id, scope) {
 
-  const resultsEl = document.getElementById('settings-course-search-results');
+  const resultsEl = document.getElementById(scope + '-course-search-results');
 
   resultsEl.innerHTML = '<div class="text-muted text-sm" style="padding:6px 0">Importing…</div>';
 
@@ -5454,29 +5476,39 @@ async function importCourse(id) {
 
 
 
-    const holesPlayed = G.scores ? G.scores.length : 0;
+    if (scope === 'settings') {
 
-    const courseSel = document.getElementById('settings-course-select');
+      const holesPlayed = G.scores ? G.scores.length : 0;
 
-    courseSel.innerHTML = '<option value="">— Select from library —</option>';
+      const courseSel = document.getElementById('settings-course-select');
 
-    getCourses().forEach((cc, ci) => {
+      courseSel.innerHTML = '<option value="">— Select from library —</option>';
 
-      const opt = document.createElement('option');
+      getCourses().forEach((cc, ci) => {
 
-      opt.value = ci;
+        const opt = document.createElement('option');
 
-      opt.textContent = cc.name;
+        opt.value = ci;
 
-      courseSel.appendChild(opt);
+        opt.textContent = cc.name;
 
-    });
+        courseSel.appendChild(opt);
 
-    if (holesPlayed === 0) {
+      });
 
-      courseSel.value = idx;
+      if (holesPlayed === 0) {
 
-      onSettingsCourseSelect();
+        courseSel.value = idx;
+
+        onSettingsCourseSelect();
+
+      }
+
+    } else if (scope === 'courses') {
+
+      populateCourseSelector();
+
+      renderCourseLibrary();
 
     }
 
