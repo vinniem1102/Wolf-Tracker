@@ -831,9 +831,9 @@
 
     background: var(--gold); vertical-align: super; margin-left: 1px; }
 
-  .sc-winner-score { display: inline-block; min-width: 16px; border-radius: 50%;
+  .sc-winner-score { display: inline-block; min-width: 16px; border-radius: 4px;
 
-    border: 1.5px solid var(--gold); color: var(--gold); padding: 0 2px; }
+    background: #d4f0da; color: #1a5e2a; padding: 0 3px; }
 
   @media (prefers-color-scheme: light) {
 
@@ -6896,15 +6896,6 @@ function buildHistoryScorecardHtml(state) {
 
 
 
-  const minGrossByHole = {};
-
-  Object.keys(byHole).forEach(h => {
-
-    const s = byHole[h];
-
-    if (s && s.grossScores) minGrossByHole[h] = Math.min(...s.grossScores);
-
-  });
 
 
 
@@ -7092,7 +7083,7 @@ function buildHistoryScorecardHtml(state) {
 
         : '';
 
-      const grossHtml = (minGrossByHole[h] != null && gross === minGrossByHole[h])
+      const grossHtml = (s.deltas && s.deltas[pidx] > 0)
 
         ? '<span class="sc-winner-score">' + gross + '</span>'
 
@@ -7222,15 +7213,6 @@ function renderScorecard() {
 
   // Lowest gross score per hole, to highlight the winning score(s) — ties share it
 
-  const minGrossByHole = {};
-
-  Object.keys(byHole).forEach(h => {
-
-    const s = byHole[h];
-
-    if (s && s.grossScores) minGrossByHole[h] = Math.min(...s.grossScores);
-
-  });
 
 
 
@@ -7458,7 +7440,7 @@ function renderScorecard() {
 
         : '';
 
-      const grossHtml = (minGrossByHole[h] != null && gross === minGrossByHole[h])
+      const grossHtml = (s.deltas && s.deltas[pidx] > 0)
 
         ? '<span class="sc-winner-score">' + gross + '</span>'
 
