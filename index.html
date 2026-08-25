@@ -1119,7 +1119,7 @@
 
           </select>
 
-          <button class="btn btn-sm" onclick="showScreen('screen-courses');renderCourseLibrary()" title="Manage courses" style="padding:8px 10px;flex-shrink:0">⚙</button>
+          <button class="btn btn-sm" onclick="_courseLibraryReturnScreen='screen-setup';showScreen('screen-courses');renderCourseLibrary()" title="Manage courses" style="padding:8px 10px;flex-shrink:0">⚙</button>
 
         </div>
 
@@ -1820,6 +1820,14 @@
 
         </div>
 
+        <div class="row">
+
+          <label class="text-sm" style="min-width:100px;color:var(--muted)"></label>
+
+          <button class="btn btn-sm" style="flex:1" onclick="_courseLibraryReturnScreen='screen-settings';showScreen('screen-courses');renderCourseLibrary();showAddCourse()">+ Add Course Manually</button>
+
+        </div>
+
         <div class="row" id="settings-tee-row" style="display:none">
 
           <label class="text-sm" style="min-width:100px;color:var(--muted)">Tee</label>
@@ -2078,7 +2086,7 @@
 
   </button>
 
-  <button class="nav-item" id="nav-courses" onclick="showScreen('screen-courses');renderCourseLibrary()">
+  <button class="nav-item" id="nav-courses" onclick="_courseLibraryReturnScreen=document.querySelector('.screen.active').id;showScreen('screen-courses');renderCourseLibrary()">
 
     <span class="nav-icon">🏌</span>Courses
 
@@ -5772,6 +5780,8 @@ function clearHcpRatings() {
 
 let editingCourseIdx = null; // null = new course
 
+let _courseLibraryReturnScreen = 'screen-setup'; // where "← Back" goes
+
 
 
 function renderCourseLibrary() {
@@ -6044,7 +6054,19 @@ function closeCourseLibrary() {
 
   populateCourseSelector();
 
-  showScreen('screen-setup');
+  const dest = _courseLibraryReturnScreen || 'screen-setup';
+
+  showScreen(dest);
+
+  if (dest === 'screen-settings') renderSettings();
+
+  else if (dest === 'screen-hole') renderHole();
+
+  else if (dest === 'screen-scores') renderScoreboard();
+
+  else if (dest === 'screen-scorecard') renderScorecard();
+
+  else if (dest === 'screen-history') renderHistory();
 
 }
 
