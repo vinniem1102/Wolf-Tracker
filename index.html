@@ -1115,7 +1115,7 @@
 
           <select id="cfg-course-select" onchange="onCourseSelect()" style="flex:1">
 
-            <option value="">— Select or type below —</option>
+            <option value="">— Select course —</option>
 
           </select>
 
@@ -1137,13 +1137,7 @@
 
       </div>
 
-      <div class="row">
-
-        <label class="text-sm" style="min-width:100px;color:var(--muted)">Course Name</label>
-
-        <input type="text" id="cfg-course" placeholder="Or enter manually">
-
-      </div>
+      <input type="hidden" id="cfg-course">
 
       <div class="row">
 
@@ -1184,14 +1178,6 @@
     </div>
 
   </div>
-
-  <div id="cfg-hcp-show-btn" style="margin-top:8px;display:none">
-
-    <button class="btn btn-sm btn-full" onclick="toggleHcpSection(true)">Enter Hole Handicap Ratings manually</button>
-
-  </div>
-
-
 
   <div class="section-label">Number of Players</div>
 
@@ -1682,6 +1668,10 @@
 
 
 
+    <button class="btn btn-primary btn-full" onclick="showAddCourse()">+ Manually Add New Course</button>
+
+
+
     <div class="section-label">Saved Courses</div>
 
     <div class="card" id="course-list-card">
@@ -1689,8 +1679,6 @@
       <div id="course-list-body"></div>
 
     </div>
-
-    <button class="btn btn-primary btn-full" onclick="showAddCourse()">+ Add New Course</button>
 
   </div>
 
@@ -5658,8 +5646,6 @@ function onCourseSelect() {
 
     toggleHcpSection(false);
 
-    document.getElementById('cfg-hcp-show-btn').style.display = 'block';
-
     return;
 
   }
@@ -5683,8 +5669,6 @@ function onCourseSelect() {
     teeSel.appendChild(opt);
 
   });
-
-  document.getElementById('cfg-hcp-show-btn').style.display = 'none';
 
 }
 
@@ -7599,8 +7583,6 @@ document.getElementById('cfg-date').value = new Date().toISOString().slice(0,10)
 // Populate course dropdown
 
 populateCourseSelector();
-
-document.getElementById('cfg-hcp-show-btn').style.display = 'block';
 
 
 
