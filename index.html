@@ -3046,7 +3046,7 @@ function renderTeeOrder() {
 
       card.innerHTML = `
 
-        <div class="tee-name">${G.players[pidx]}</div>
+        <div class="tee-name">${G.players[pidx]}${playerParHcpLabel(pidx, holeState.hole)}</div>
 
         ${strokeBadge}
 
@@ -3070,7 +3070,7 @@ function renderTeeOrder() {
 
       card.innerHTML = `
 
-        <div class="tee-name" style="${isSolo?'color:#e74c3c;font-weight:600':''}">${G.players[pidx]}${isSolo?' ★':''}</div>
+        <div class="tee-name" style="${isSolo?'color:#e74c3c;font-weight:600':''}">${G.players[pidx]}${isSolo?' ★':''}${playerParHcpLabel(pidx, holeState.hole)}</div>
 
         ${strokeBadge}
 
@@ -3603,6 +3603,44 @@ function strokesOnHole(pidx, h) {
   const extraStrokes = playingHcp % 18;
 
   return fullStrokes + (rating <= extraStrokes ? 1 : 0);
+
+}
+
+
+
+// This player's own hole handicap rating (1=hardest) for a given hole, from
+
+// their assigned tee if one was set, else the round's default tee.
+
+function playerHoleRating(pidx, h) {
+
+  const ratings = (G.playerHoleRatings && G.playerHoleRatings[pidx]) ? G.playerHoleRatings[pidx] : G.holeRatings;
+
+  return ratings ? ratings[h-1] : null;
+
+}
+
+
+
+// Small "Par 4 · Hcp 7" label for a player's tee-card, built from the round's
+
+// par (same for everyone) and this player's own hole handicap rating.
+
+function playerParHcpLabel(pidx, h) {
+
+  const par = (G.parData && G.parData[h-1] != null) ? G.parData[h-1] : null;
+
+  const hcp = playerHoleRating(pidx, h);
+
+  if (par == null && hcp == null) return '';
+
+  const parts = [];
+
+  if (par != null) parts.push('Par ' + par);
+
+  if (hcp != null) parts.push('Hcp ' + hcp);
+
+  return '<span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:6px">' + parts.join(' · ') + '</span>';
 
 }
 
