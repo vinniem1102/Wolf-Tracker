@@ -1373,11 +1373,6 @@
 
       <div class="hole-num-display" id="hole-number-display">1</div>
 
-      <div style="display:flex;gap:12px;margin-top:4px">
-        <div><div class="hole-info-label">Par</div><div style="font-size:14px;font-weight:700" id="hole-par-display">—</div></div>
-        <div><div class="hole-info-label">Hcp</div><div style="font-size:14px;font-weight:700" id="hole-hcp-display">—</div></div>
-      </div>
-
     </div>
 
     <div class="hole-info" id="hole-info-right">
@@ -2868,14 +2863,6 @@ function renderHole() {
 
   document.getElementById('hole-number-display').textContent = h;
 
-  const parEl = document.getElementById('hole-par-display');
-
-  const hcpEl = document.getElementById('hole-hcp-display');
-
-  if (parEl) parEl.textContent = (G.parData && G.parData[h-1] != null) ? G.parData[h-1] : '—';
-
-  if (hcpEl) hcpEl.textContent = (G.holeRatings && G.holeRatings[h-1] != null) ? G.holeRatings[h-1] : '—';
-
   document.getElementById('wolf-name-display').textContent = G.players[wolfIdx];
 
   const displayCarryover = isWolfHole ? 0 : G.carryover;
@@ -3676,7 +3663,7 @@ function renderScoreInputs() {
 
     row.innerHTML = `
 
-      <div style="flex:1;font-size:14px;font-weight:500">${G.players[pidx]}</div>
+      <div style="flex:1;font-size:14px;font-weight:500">${G.players[pidx]}${playerParHcpLabel(pidx, h)}</div>
 
       ${strokeBadge}
 
