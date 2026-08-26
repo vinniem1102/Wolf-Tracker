@@ -2176,6 +2176,10 @@ function defaultG() {
 
     parData: null, // per-hole par, from imported tee data (index 0 = hole 1)
 
+    playerTeeRefs: [], // per-player {courseIdx, teeIdx} override, defaults to teeRef
+
+    playerHoleRatings: [], // per-player hole ratings snapshot, falls back to holeRatings
+
   };
 
 }
@@ -2230,7 +2234,7 @@ function updateSetup() {
 
   // Save existing values before clearing
 
-  const existing = [], existingHcps = [];
+  const existing = [], existingHcps = [], existingTees = [];
 
   cont.querySelectorAll('.player-row').forEach(function(row) {
 
@@ -2239,6 +2243,10 @@ function updateSetup() {
     existing.push(inputs[0] ? inputs[0].value : '');
 
     existingHcps.push(inputs[1] ? inputs[1].value : '');
+
+    const teeSel = row.querySelector('.player-tee-select');
+
+    existingTees.push(teeSel ? { value: teeSel.value, custom: teeSel.dataset.custom === '1' } : null);
 
   });
 
@@ -2254,7 +2262,13 @@ function updateSetup() {
 
     row.className = 'player-row';
 
-    row.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:8px';
+    row.style.cssText = 'display:flex;flex-direction:column;gap:6px;margin-bottom:12px';
+
+
+
+    var topRow = document.createElement('div');
+
+    topRow.style.cssText = 'display:flex;align-items:center;gap:10px';
 
 
 
@@ -2296,11 +2310,53 @@ function updateSetup() {
 
 
 
-    row.appendChild(num);
+    topRow.appendChild(num);
 
-    row.appendChild(nameInput);
+    topRow.appendChild(nameInput);
 
-    row.appendChild(hcpInput);
+    topRow.appendChild(hcpInput);
+
+    row.appendChild(topRow);
+
+
+
+    var teeWrap = document.createElement('div');
+
+    teeWrap.style.cssText = 'display:flex;align-items:center;gap:6px;padding-left:34px';
+
+
+
+    var teeLabel = document.createElement('span');
+
+    teeLabel.textContent = 'Tee';
+
+    teeLabel.style.cssText = 'font-size:11px;color:var(--muted);flex-shrink:0';
+
+
+
+    var teeSelect = document.createElement('select');
+
+    teeSelect.className = 'player-tee-select';
+
+    teeSelect.id = 'cfg-player-tee-' + i;
+
+    teeSelect.style.cssText = 'flex:1;font-size:12px;padding:4px 6px';
+
+    teeSelect.title = "This player's tee (defaults to the Round Info tee)";
+
+    teeSelect.innerHTML = '<option value="">— pick course first —</option>';
+
+    teeSelect.disabled = true;
+
+    teeSelect.onchange = function() { this.dataset.custom = '1'; };
+
+
+
+    teeWrap.appendChild(teeLabel);
+
+    teeWrap.appendChild(teeSelect);
+
+    row.appendChild(teeWrap);
 
     cont.appendChild(row);
 
@@ -2308,7 +2364,109 @@ function updateSetup() {
 
 
 
+  rebuildPlayerTeeSelects(existingTees);
+
+
+
   renderMultTable(n);
+
+}
+
+
+
+// Populates each player's Tee dropdown from the course currently selected in
+
+// Round Info, defaulting to that course's selected tee. Pass preserved =
+
+// existingTees from updateSetup() to restore each player's prior pick (and
+
+// whether the user had customized it away from the round default) across a
+
+// re-render, e.g. when the player count changes.
+
+function rebuildPlayerTeeSelects(preserved) {
+
+  const courseSel = document.getElementById('cfg-course-select');
+
+  const roundTeeSel = document.getElementById('cfg-tee-select');
+
+  const ci = courseSel ? courseSel.value : '';
+
+  const roundTi = roundTeeSel ? roundTeeSel.value : '';
+
+  const course = ci !== '' ? getCourses()[parseInt(ci)] : null;
+
+
+
+  document.querySelectorAll('.player-tee-select').forEach(function(sel, i) {
+
+    const prior = preserved && preserved[i];
+
+    if (!course) {
+
+      sel.innerHTML = '<option value="">— pick course first —</option>';
+
+      sel.disabled = true;
+
+      delete sel.dataset.custom;
+
+      return;
+
+    }
+
+    sel.disabled = false;
+
+    sel.innerHTML = '';
+
+    course.tees.forEach(function(t, ti) {
+
+      const opt = document.createElement('option');
+
+      opt.value = ti;
+
+      opt.textContent = t.name + (t.yardage ? ' (' + t.yardage + ' yds)' : '');
+
+      sel.appendChild(opt);
+
+    });
+
+    if (prior && prior.custom && course.tees[parseInt(prior.value)]) {
+
+      sel.value = prior.value;
+
+      sel.dataset.custom = '1';
+
+    } else if (roundTi !== '' && course.tees[parseInt(roundTi)]) {
+
+      sel.value = roundTi;
+
+      delete sel.dataset.custom;
+
+    }
+
+  });
+
+}
+
+
+
+// Called when the Round Info tee changes — updates any player dropdown that's
+
+// still at the default (not individually customized) to match.
+
+function syncPlayerTeeDefaults(newTeeIdx) {
+
+  document.querySelectorAll('.player-tee-select').forEach(function(sel) {
+
+    if (sel.disabled || sel.dataset.custom === '1') return;
+
+    if (newTeeIdx !== '' && sel.querySelector('option[value="' + newTeeIdx + '"]')) {
+
+      sel.value = newTeeIdx;
+
+    }
+
+  });
 
 }
 
@@ -2515,6 +2673,42 @@ function startGame() {
   G.holeRatings = holeRatings.length === 18 ? holeRatings : Array.from({length:18},(_,i)=>i+1);
 
   G.hasHandicaps = hasHandicaps;
+
+
+
+  // Per-player tee overrides — each defaults to the Round Info tee unless the
+
+  // user picked a different one for that player on the setup screen.
+
+  const courses = getCourses();
+
+  G.playerTeeRefs = [];
+
+  G.playerHoleRatings = [];
+
+  for (let pi = 0; pi < n; pi++) {
+
+    const sel = document.getElementById('cfg-player-tee-' + pi);
+
+    const ti = sel && !sel.disabled ? parseInt(sel.value) : NaN;
+
+    if (G.teeRef && !isNaN(ti) && courses[G.teeRef.courseIdx] && courses[G.teeRef.courseIdx].tees[ti]) {
+
+      const tee = courses[G.teeRef.courseIdx].tees[ti];
+
+      G.playerTeeRefs.push({courseIdx: G.teeRef.courseIdx, teeIdx: ti});
+
+      G.playerHoleRatings.push(tee.ratings && tee.ratings.length === 18 ? [...tee.ratings] : null);
+
+    } else {
+
+      G.playerTeeRefs.push(null);
+
+      G.playerHoleRatings.push(null);
+
+    }
+
+  }
 
   G.points      = new Array(n).fill(0);
 
@@ -3390,7 +3584,9 @@ function resetPicking() {
 
 function strokesOnHole(pidx, h) {
 
-  if (!G.hasHandicaps || !G.holeRatings) return 0;
+  const ratings = (G.playerHoleRatings && G.playerHoleRatings[pidx]) ? G.playerHoleRatings[pidx] : G.holeRatings;
+
+  if (!G.hasHandicaps || !ratings) return 0;
 
   // Relative handicap: lowest handicap player plays scratch; everyone gets the difference
 
@@ -3400,7 +3596,7 @@ function strokesOnHole(pidx, h) {
 
   if (playingHcp <= 0) return 0;
 
-  const rating = G.holeRatings[h-1]; // hole's handicap rating (1=hardest)
+  const rating = ratings[h-1]; // hole's handicap rating (1=hardest), from this player's own tee if set
 
   const fullStrokes = Math.floor(playingHcp / 18);
 
@@ -5646,6 +5842,8 @@ function onCourseSelect() {
 
     toggleHcpSection(false);
 
+    rebuildPlayerTeeSelects();
+
     return;
 
   }
@@ -5669,6 +5867,8 @@ function onCourseSelect() {
     teeSel.appendChild(opt);
 
   });
+
+  rebuildPlayerTeeSelects();
 
 }
 
@@ -5701,6 +5901,8 @@ function onTeeSelect() {
   }
 
   toggleHcpSection(true);
+
+  syncPlayerTeeDefaults(ti);
 
 }
 
@@ -6866,7 +7068,9 @@ function buildHistoryLogHtml(state) {
 
 function historyStrokesOnHole(state, pidx, h) {
 
-  if (!state.hasHandicaps || !state.holeRatings) return 0;
+  const ratings = (state.playerHoleRatings && state.playerHoleRatings[pidx]) ? state.playerHoleRatings[pidx] : state.holeRatings;
+
+  if (!state.hasHandicaps || !ratings) return 0;
 
   const minHcp = Math.min(...state.handicaps);
 
@@ -6874,7 +7078,7 @@ function historyStrokesOnHole(state, pidx, h) {
 
   if (playingHcp <= 0) return 0;
 
-  const rating = state.holeRatings[h-1];
+  const rating = ratings[h-1];
 
   const fullStrokes = Math.floor(playingHcp / 18);
 
