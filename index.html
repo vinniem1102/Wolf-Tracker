@@ -4741,15 +4741,17 @@ function startEditHole(si) {
 
 
 
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">
 
-        Wolf: <strong style="color:var(--gold)">${G.players[s.wolfIdx]}</strong> ·
-
-        <strong>${modeLabel} · ${mult}×</strong> ·
-
-        <span>Team: ${wolfTeam.map(i=>G.players[i]).join(', ')} vs ${opponents.map(i=>G.players[i]).join(', ')}</span>
+        Wolf: <strong style="color:var(--gold)">${G.players[s.wolfIdx]}</strong>
 
       </div>
+
+
+
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px">Wolf Decision</div>
+
+      <div id="edit-decision" style="margin-bottom:14px"></div>
 
 
 
@@ -4845,6 +4847,210 @@ function startEditHole(si) {
 
   overlay.dataset.mult = curMult;
 
+  overlay.dataset.mode = s.mode;
+
+  overlay.dataset.partners = JSON.stringify(s.partnerIdxs || []);
+
+  overlay.dataset.solo = (s.soloIdx == null ? '' : String(s.soloIdx));
+
+  renderEditDecision();
+
+}
+
+
+
+// Builds the mode buttons + partner/solo pickers inside the edit overlay from
+
+// the working state held on overlay.dataset (mode / partners / solo).
+
+function renderEditDecision() {
+
+  const overlay = document.getElementById('edit-overlay');
+
+  if (!overlay) return;
+
+  const box = overlay.querySelector('#edit-decision');
+
+  if (!box) return;
+
+  const si = parseInt(overlay.dataset.si);
+
+  const s = G.scores[si];
+
+  const n = G.numPlayers;
+
+  const wolfIdx = s.wolfIdx;
+
+  const mode = overlay.dataset.mode;
+
+  const partners = JSON.parse(overlay.dataset.partners || '[]');
+
+  const soloIdx = overlay.dataset.solo === '' ? null : parseInt(overlay.dataset.solo);
+
+  const maxP = getMaxPartners();
+
+
+
+  const modes = [
+
+    {key:'loneAfterTee', label:'Lone (tee)', ok:true},
+
+    {key:'loneAfterAll', label:'Lone (all)', ok:true},
+
+    {key:'picks1',       label:'Picks 1',    ok:maxP >= 1},
+
+    {key:'picks2',       label:'Picks 2',    ok:maxP >= 2},
+
+    {key:'picks3',       label:'Picks 3',    ok:maxP >= 3},
+
+    {key:'solo',         label:'Solo',       ok:true},
+
+  ];
+
+  const btn = (active, disabled, onclick, label) =>
+
+    `<button ${disabled?'disabled':''} onclick="${onclick}" style="padding:6px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:${disabled?'not-allowed':'pointer'};font-family:var(--font-sans,sans-serif);`
+
+    + `border:1px solid ${active?'var(--gold)':'var(--border)'};background:${active?'var(--gold)':'transparent'};color:${active?'#111':disabled?'#555':'var(--text)'}">${label}</button>`;
+
+
+
+  let html = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">';
+
+  modes.forEach(m => {
+
+    html += btn(mode === m.key, !m.ok, `setEditMode('${m.key}')`, m.label);
+
+  });
+
+  html += '</div>';
+
+
+
+  const picksCount = mode === 'picks1' ? 1 : mode === 'picks2' ? 2 : mode === 'picks3' ? 3 : 0;
+
+  if (picksCount > 0) {
+
+    html += `<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Partner${picksCount>1?'s':''} — pick ${picksCount} (${partners.length} selected)</div>`;
+
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+
+    for (let i = 0; i < n; i++) {
+
+      if (i === wolfIdx) continue;
+
+      const on = partners.includes(i);
+
+      const full = !on && partners.length >= picksCount;
+
+      html += btn(on, full, `toggleEditPartner(${i})`, G.players[i]);
+
+    }
+
+    html += '</div>';
+
+  } else if (mode === 'solo') {
+
+    html += '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Solo player — vs everyone else</div>';
+
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+
+    for (let i = 0; i < n; i++) {
+
+      if (i === wolfIdx) continue;
+
+      html += btn(soloIdx === i, false, `setEditSolo(${i})`, G.players[i]);
+
+    }
+
+    html += '</div>';
+
+  } else {
+
+    html += '<div style="font-size:11px;color:var(--muted)">Wolf plays alone against everyone.</div>';
+
+  }
+
+
+
+  box.innerHTML = html;
+
+}
+
+
+
+function setEditMode(mode) {
+
+  const overlay = document.getElementById('edit-overlay');
+
+  if (!overlay) return;
+
+  overlay.dataset.mode = mode;
+
+  let partners = JSON.parse(overlay.dataset.partners || '[]');
+
+  const picksCount = mode === 'picks1' ? 1 : mode === 'picks2' ? 2 : mode === 'picks3' ? 3 : 0;
+
+  if (picksCount === 0) partners = [];
+
+  else if (partners.length > picksCount) partners = partners.slice(0, picksCount);
+
+  overlay.dataset.partners = JSON.stringify(partners);
+
+  if (mode === 'solo' && overlay.dataset.solo === '') {
+
+    const si = parseInt(overlay.dataset.si);
+
+    const wolfIdx = G.scores[si].wolfIdx;
+
+    for (let i = 0; i < G.numPlayers; i++) { if (i !== wolfIdx) { overlay.dataset.solo = String(i); break; } }
+
+  }
+
+  if (mode !== 'solo') overlay.dataset.solo = '';
+
+  renderEditDecision();
+
+}
+
+
+
+function toggleEditPartner(pidx) {
+
+  const overlay = document.getElementById('edit-overlay');
+
+  if (!overlay) return;
+
+  const mode = overlay.dataset.mode;
+
+  const picksCount = mode === 'picks1' ? 1 : mode === 'picks2' ? 2 : mode === 'picks3' ? 3 : 0;
+
+  let partners = JSON.parse(overlay.dataset.partners || '[]');
+
+  const at = partners.indexOf(pidx);
+
+  if (at >= 0) partners.splice(at, 1);
+
+  else if (partners.length < picksCount) partners.push(pidx);
+
+  overlay.dataset.partners = JSON.stringify(partners);
+
+  renderEditDecision();
+
+}
+
+
+
+function setEditSolo(pidx) {
+
+  const overlay = document.getElementById('edit-overlay');
+
+  if (!overlay) return;
+
+  overlay.dataset.solo = String(pidx);
+
+  renderEditDecision();
+
 }
 
 
@@ -4860,6 +5066,50 @@ function adjustEditMult(delta) {
   overlay.dataset.mult = m;
 
   document.getElementById('edit-mult-display').textContent = m;
+
+}
+
+
+
+// Reads the edited Wolf decision from the overlay and writes mode / partnerIdxs
+
+// / soloIdx onto `rec`. Returns false (after an alert) if the selection is
+
+// incomplete — e.g. Picks 2 with only one partner chosen.
+
+function applyEditDecision(rec, overlay) {
+
+  const mode = overlay.dataset.mode;
+
+  const partners = JSON.parse(overlay.dataset.partners || '[]');
+
+  const soloIdx = overlay.dataset.solo === '' ? null : parseInt(overlay.dataset.solo);
+
+  const picksCount = mode === 'picks1' ? 1 : mode === 'picks2' ? 2 : mode === 'picks3' ? 3 : 0;
+
+  if (picksCount > 0 && partners.length !== picksCount) {
+
+    alert('Select exactly ' + picksCount + ' partner' + (picksCount > 1 ? 's' : '') + ' for ' + mode + '.');
+
+    return false;
+
+  }
+
+  if (mode === 'solo' && soloIdx == null) {
+
+    alert('Choose which player goes Solo.');
+
+    return false;
+
+  }
+
+  rec.mode = mode;
+
+  rec.partnerIdxs = mode === 'solo' ? [] : partners.slice();
+
+  rec.soloIdx = mode === 'solo' ? soloIdx : null;
+
+  return true;
 
 }
 
@@ -4898,6 +5148,8 @@ function recalculateEditPreview(si) {
   // Build a temporary score record from current overlay inputs
 
   const tempScore = JSON.parse(JSON.stringify(G.scores[si]));
+
+  if (!applyEditDecision(tempScore, overlay)) return;
 
   const newGrossScores = [];
 
@@ -5135,6 +5387,8 @@ function saveEditHole(si) {
 
 
 
+  if (!applyEditDecision(G.scores[si], overlay)) return;
+
   G.scores[si].grossScores = newGrossScores;
 
   G.scores[si].holeDoubles = newMult;
@@ -5297,21 +5551,29 @@ function refreshHoleScreenAfterEdit() {
 
       const n = G.numPlayers;
 
-      const wolfTeam = [currentEntry.wolfIdx, ...currentEntry.partnerIdxs];
+      const isSolo = currentEntry.mode === 'solo';
+
+      const team = isSolo ? [currentEntry.soloIdx] : [currentEntry.wolfIdx, ...currentEntry.partnerIdxs];
 
       const opponents = [];
 
-      for (let i = 0; i < n; i++) { if (!wolfTeam.includes(i)) opponents.push(i); }
+      for (let i = 0; i < n; i++) { if (!team.includes(i)) opponents.push(i); }
 
-      const mult = MULTIPLIERS[currentEntry.mode][n-4];
+      const multKey = isSolo ? 'loneAfterAll' : currentEntry.mode;
+
+      const mult = (MULTIPLIERS[multKey] || [])[n-4] || 1;
 
       const resultMsg = currentEntry.result === 'wolf-wins' ? 'Wolf Team Wins!'
+
+        : currentEntry.result === 'solo-wins' ? `${G.players[currentEntry.soloIdx]} Wins Solo!`
+
+        : currentEntry.result === 'solo-lost' ? `${G.players[currentEntry.soloIdx]} Solo Failed!`
 
         : currentEntry.result === 'opponents-win' ? 'Opponents Win!'
 
         : 'Push — points carry to next hole';
 
-      showHoleResult(currentEntry.result, resultMsg, currentEntry.deltas, wolfTeam, opponents, currentEntry.totalPts, mult);
+      showHoleResult(currentEntry.result, resultMsg, currentEntry.deltas, team, opponents, currentEntry.totalPts, mult);
 
     }
 
