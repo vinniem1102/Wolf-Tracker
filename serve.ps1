@@ -16,9 +16,9 @@ $listener.Start()
 Write-Host "Serving $root at http://localhost:$Port/  (Ctrl+C to stop)"
 
 $mime = @{
-  '.html' = 'text/html'; '.js' = 'text/javascript'; '.css' = 'text/css'
-  '.json' = 'application/json'; '.png' = 'image/png'; '.jpg' = 'image/jpeg'
-  '.svg' = 'image/svg+xml'; '.ico' = 'image/x-icon'
+  '.html' = 'text/html; charset=utf-8'; '.js' = 'text/javascript; charset=utf-8'; '.css' = 'text/css; charset=utf-8'
+  '.json' = 'application/json; charset=utf-8'; '.png' = 'image/png'; '.jpg' = 'image/jpeg'
+  '.svg' = 'image/svg+xml; charset=utf-8'; '.ico' = 'image/x-icon'
 }
 
 try {
