@@ -2551,6 +2551,14 @@ function resetMultipliers() {
 
 function startGame() {
 
+  const courseSel = document.getElementById('cfg-course-select');
+
+  const teeSel = document.getElementById('cfg-tee-select');
+
+  if (!courseSel || !courseSel.value) { alert('Select a course before starting the round.'); return; }
+
+  if (!teeSel || !teeSel.value) { alert('Select a tee before starting the round.'); return; }
+
   const n = parseInt(document.getElementById('num-players').value);
 
   const names = [], handicaps = [];
@@ -4693,7 +4701,9 @@ function startEditHole(si) {
 
 
 
-  // Wolf holes allow editing the base point value too
+  // Wolf holes allow editing the base point value (manual entry); regular
+
+  // holes just show it read-only since it's derived from the point table.
 
   const wolfHolePtsRow = isWolfHole ? `
 
@@ -4715,7 +4725,21 @@ function startEditHole(si) {
 
         font-size:18px;font-weight:700;font-family:'DM Mono',monospace">
 
-    </div>` : '';
+    </div>` : `
+
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--border);margin-bottom:4px">
+
+      <div style="flex:1">
+
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Hole Point Value</div>
+
+      </div>
+
+      <div style="width:70px;text-align:center;padding:6px 4px;color:var(--gold);
+
+        font-size:18px;font-weight:700;font-family:'DM Mono',monospace">${s.basePts}</div>
+
+    </div>`;
 
 
 
@@ -4917,9 +4941,9 @@ function renderEditDecision() {
 
   let html = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">';
 
-  modes.forEach(m => {
+  modes.filter(m => m.ok).forEach(m => {
 
-    html += btn(mode === m.key, !m.ok, `setEditMode('${m.key}')`, m.label);
+    html += btn(mode === m.key, false, `setEditMode('${m.key}')`, m.label);
 
   });
 
@@ -7064,6 +7088,8 @@ function resumeGame() {
 
 
 function discardSave() {
+
+  if (!confirm('Discard the round in progress and start a new one? This cannot be undone.')) return;
 
   clearSave();
 
