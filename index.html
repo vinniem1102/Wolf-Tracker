@@ -4719,6 +4719,8 @@ function startEditHole(si) {
 
       <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="3" id="edit-basepts" value="${s.basePts}"
 
+        oninput="updateEditStake()"
+
         style="width:70px;text-align:center;padding:6px 4px;background:var(--surface2);
 
         border:1px solid var(--border);border-radius:6px;color:var(--gold);
@@ -4806,6 +4808,22 @@ function startEditHole(si) {
         <button onclick="adjustEditMult(1)"
 
           style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:18px;cursor:pointer;font-family:var(--font-sans,sans-serif)">+</button>
+
+      </div>
+
+
+
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--border);margin-bottom:12px">
+
+        <div style="flex:1">
+
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Stake</div>
+
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Point Value × decision × doubles</div>
+
+        </div>
+
+        <div id="edit-stake-display" style="font-size:22px;font-weight:700;color:var(--gold);font-family:'DM Mono',monospace">$0</div>
 
       </div>
 
@@ -4917,9 +4935,9 @@ function renderEditDecision() {
 
   const modes = [
 
-    {key:'loneAfterTee', label:'Lone (tee)', ok:true},
+    {key:'loneAfterTee', label:'Lone (my tee)', ok:true},
 
-    {key:'loneAfterAll', label:'Lone (all)', ok:true},
+    {key:'loneAfterAll', label:'Lone (after all)', ok:true},
 
     {key:'picks1',       label:'Picks 1',    ok:maxP >= 1},
 
@@ -4998,6 +5016,50 @@ function renderEditDecision() {
 
 
   box.innerHTML = html;
+
+  updateEditStake();
+
+}
+
+
+
+// Recomputes the live Stake preview from the current mode, doubles, and
+
+// point value (editable on Wolf holes, fixed for regular holes).
+
+function updateEditStake() {
+
+  const overlay = document.getElementById('edit-overlay');
+
+  if (!overlay) return;
+
+  const el = document.getElementById('edit-stake-display');
+
+  if (!el) return;
+
+  const si = parseInt(overlay.dataset.si);
+
+  const s = G.scores[si];
+
+  const n = G.numPlayers;
+
+  const mode = overlay.dataset.mode;
+
+  const doubles = parseInt(overlay.dataset.mult || 0);
+
+  const basePtsInput = overlay.querySelector('#edit-basepts');
+
+  const basePts = basePtsInput ? (parseInt(basePtsInput.value) || 0) : s.basePts;
+
+  const multKey = mode === 'solo' ? 'loneAfterAll' : mode;
+
+  const activeMults = G.multipliers || MULTIPLIERS;
+
+  const mult = (activeMults[multKey] ? activeMults[multKey][n-4] : null) || 1;
+
+  const stake = basePts * mult * Math.pow(2, doubles);
+
+  el.textContent = '$' + stake.toFixed(0);
 
 }
 
@@ -5090,6 +5152,8 @@ function adjustEditMult(delta) {
   overlay.dataset.mult = m;
 
   document.getElementById('edit-mult-display').textContent = m;
+
+  updateEditStake();
 
 }
 
