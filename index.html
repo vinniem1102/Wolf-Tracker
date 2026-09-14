@@ -1045,11 +1045,171 @@
 
   }
 
+
+
+  /* ── Explicit "Light" override — same rules as the OS-driven light theme
+
+     above, but keyed on a data-theme attribute instead of the media query,
+
+     so picking "Light" in Settings works even when the phone itself is set
+
+     to dark mode. (There's no equivalent forced-"Dark" override yet — dark
+
+     is already this app's default appearance, so nothing needs to force it
+
+     over a light OS preference for this round of testing.) ── */
+
+  :root[data-theme="light"] {
+
+    --bg: #f7f5ef; --surface: #ffffff; --surface2: #efece1; --border: #dcd7c9;
+
+    --gold: #7a5e15; --gold-dim: #a8863a; --red: #a83a24; --green: #1f7a63;
+
+    --text: #1c1a17; --muted: #5b564c; --wolf-color: #7a5e15;
+
+    --partner-color: #1f7a63; --opponent-color: #8a8478;
+
+  }
+
+  [data-theme="light"] body { background: var(--bg); color: var(--text); }
+
+  [data-theme="light"] input[type=text], [data-theme="light"] input[type=number],
+
+  [data-theme="light"] select, [data-theme="light"] input[type=tel], [data-theme="light"] input[type=date] {
+
+    background: #ffffff; border-color: var(--border); color: var(--text);
+
+  }
+
+  [data-theme="light"] select option { background: #ffffff; color: var(--text); }
+
+  [data-theme="light"] .card { background: var(--surface); border-color: var(--border); }
+
+  [data-theme="light"] .tee-card { background: var(--surface); border-color: var(--border); }
+
+  [data-theme="light"] .tee-card.is-wolf { background: #fdf8e8; border-color: var(--gold); border-width: 2px; }
+
+  [data-theme="light"] .tee-card.is-partner { background: #e1f0ec; border-color: var(--partner-color); border-width: 2px; }
+
+  [data-theme="light"] .tee-card.is-solo { background: #fbe9e3; border-color: var(--red); border-width: 2px; }
+
+  [data-theme="light"] .role-wolf { background: #fdf3d0; color: #7a5e15; border-color: var(--gold); }
+
+  [data-theme="light"] .role-partner { background: #d3ece7; color: #12483d; border-color: #1f7a63; }
+
+  [data-theme="light"] .carryover-badge { background: #fdf0d0; color: #7a5e15; }
+
+  [data-theme="light"] .hole-points-badge { background: #fdf3d0; color: #7a5e15; }
+
+  [data-theme="light"] .result-banner.wolf-wins { background: #e1f0ec; border-color: var(--green); }
+
+  [data-theme="light"] .result-banner.opponents-win { background: #fbe9e3; border-color: var(--red); }
+
+  [data-theme="light"] .result-banner.push { background: #fdf8e8; border-color: var(--gold-dim); }
+
+  [data-theme="light"] .nav-bar { background: #1c1a17; border-color: #0f0e0c; }
+
+  [data-theme="light"] .nav-item { color: #a89f8e; font-size: 10px; }
+
+  [data-theme="light"] .nav-item.active { color: #f3ead0; }
+
+  [data-theme="light"] .hcp-stroke-badge { background: #fdf3d0; color: #7a5e15; }
+
+  [data-theme="light"] .positive { color: #1f7a63; }
+
+  [data-theme="light"] .negative { color: var(--red); }
+
+  [data-theme="light"] .mult-table td.highlight { color: var(--gold); font-weight: 700; }
+
+  [data-theme="light"] .mult-table th, [data-theme="light"] .mult-table td { border-color: var(--border); }
+
+  [data-theme="light"] .mult-table th { background: var(--surface2); color: var(--muted); }
+
+  [data-theme="light"] .tee-badge { border-color: var(--border); }
+
+  [data-theme="light"] .wolf-dot { background: var(--gold); }
+
+  [data-theme="light"] .ledger-amt { color: var(--green); }
+
+  [data-theme="light"] .ledger-arrow { color: var(--green); }
+
+  [data-theme="light"] .btn { border-color: var(--border); color: var(--text); }
+
+  [data-theme="light"] .btn:hover { border-color: var(--green); color: var(--green); }
+
+  [data-theme="light"] .btn-primary { background: var(--green); color: #d3ece7; border-color: var(--green); }
+
+  [data-theme="light"] .btn-primary:hover { background: #12483d; color: #d3ece7; border-color: #12483d; }
+
+  [data-theme="light"] .btn-danger { border-color: var(--red); color: var(--red); }
+
+  [data-theme="light"] .btn-success { border-color: var(--green); color: var(--green); }
+
+  [data-theme="light"] .score-table th { color: var(--muted); border-color: var(--border); }
+
+  [data-theme="light"] .score-table td { border-color: var(--border); }
+
+  [data-theme="light"] .hcp-cell label { color: var(--muted); }
+
+  [data-theme="light"] .course-item { border-color: var(--border); }
+
+  [data-theme="light"] .config-table th { color: var(--muted); border-color: var(--border); }
+
+  [data-theme="light"] .config-table tr + tr td { border-color: var(--border); }
+
+  [data-theme="light"] .config-table .label-cell { color: var(--text); }
+
+  [data-theme="light"] .app-title { color: var(--green); }
+
+  [data-theme="light"] .app-header { border-color: var(--border); }
+
+  [data-theme="light"] .section-label { color: var(--muted); }
+
+  [data-theme="light"] .hole-banner { background: var(--surface); border-color: var(--border); }
+
+  [data-theme="light"] .hole-num-display { color: var(--green); }
+
+  [data-theme="light"] .mode-btn { border-color: var(--border); color: var(--muted); background: var(--surface); }
+
+  [data-theme="light"] .mode-btn:hover { border-color: var(--green); color: var(--green); }
+
+  [data-theme="light"] .mode-btn.active { background: var(--green); color: #d3ece7; border-color: var(--green); }
+
+  [data-theme="light"] .player-num { background: var(--green); color: #d3ece7; }
+
+  [data-theme="light"] .wolf-icon { background: var(--green); }
+
+  [data-theme="light"] .hole-info-label { color: var(--muted); }
+
+  [data-theme="light"] .sc-wolf-cell, [data-theme="light"] .sc-partner-cell { color: #12483d; background: #d3ece7; }
+
+  [data-theme="light"] .na { color: var(--border); }
+
 </style>
 
 </head>
 
 <body>
+
+<script>
+
+  // Apply a saved theme choice before anything paints, so there's no flash
+
+  // of the wrong theme on load. Kept separate from the main script (which
+
+  // loads at the end of the page) for exactly that reason.
+
+  try {
+
+    if (localStorage.getItem('wolf_theme') === 'light') {
+
+      document.documentElement.setAttribute('data-theme', 'light');
+
+    }
+
+  } catch (e) {}
+
+</script>
 
 
 
@@ -1744,6 +1904,30 @@
       <div class="app-sub">Mid-round adjustments</div>
 
     </div>
+
+  </div>
+
+
+
+  <div class="section-label">Appearance</div>
+
+  <div class="card">
+
+    <div class="row" style="justify-content:space-between">
+
+      <label class="text-sm" style="color:var(--muted)">Theme</label>
+
+      <div style="display:flex;gap:6px" id="theme-toggle">
+
+        <button class="btn btn-sm" data-theme-opt="system" onclick="setAppTheme('system')">System</button>
+
+        <button class="btn btn-sm" data-theme-opt="light" onclick="setAppTheme('light')">☀️ Light</button>
+
+      </div>
+
+    </div>
+
+    <div style="font-size:11px;color:var(--muted);margin-top:6px">Light forces the paper-background theme regardless of your phone's setting — handy for testing outdoors.</div>
 
   </div>
 
@@ -6769,7 +6953,55 @@ function closeCourseLibrary() {
 
 // ===================== SETTINGS =====================
 
+const THEME_KEY = 'wolf_theme';
+
+
+
+function setAppTheme(mode) {
+
+  if (mode === 'light') {
+
+    document.documentElement.setAttribute('data-theme', 'light');
+
+    storeSet(THEME_KEY, 'light');
+
+  } else {
+
+    document.documentElement.removeAttribute('data-theme');
+
+    storeRemove(THEME_KEY);
+
+  }
+
+  renderThemeToggle();
+
+}
+
+
+
+function renderThemeToggle() {
+
+  const box = document.getElementById('theme-toggle');
+
+  if (!box) return;
+
+  const current = storeGet(THEME_KEY) === 'light' ? 'light' : 'system';
+
+  box.querySelectorAll('button').forEach(b => {
+
+    const active = b.dataset.themeOpt === current;
+
+    b.className = active ? 'btn btn-sm btn-primary' : 'btn btn-sm';
+
+  });
+
+}
+
+
+
 function renderSettings() {
+
+  renderThemeToggle();
 
   const n = G.numPlayers;
 
