@@ -17,7 +17,7 @@
 
 <meta name="theme-color" content="#0e0e0e" media="(prefers-color-scheme: dark)">
 
-<meta name="theme-color" content="#f0f5f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#f7f5ef" media="(prefers-color-scheme: light)">
 
 <title>Wolf — Golf Wagering Tracker</title>
 
@@ -855,37 +855,39 @@
 
 
 
-  /* ── Light mode — forest green theme ─────────────────────────────────── */
+  /* ── Light mode — "Outdoor" theme: warm paper ground, darkened accents for ─
+
+     glare, colorblind-safe win/loss hues (teal/red-orange, not green/red) ── */
 
   @media (prefers-color-scheme: light) {
 
     :root {
 
-      --bg: #f0f5f1;
+      --bg: #f7f5ef;
 
       --surface: #ffffff;
 
-      --surface2: #e4f0e6;
+      --surface2: #efece1;
 
-      --border: #a3c4a8;
+      --border: #dcd7c9;
 
-      --gold: #b8860b;
+      --gold: #7a5e15;
 
-      --gold-dim: #d4a82a;
+      --gold-dim: #a8863a;
 
-      --red: #a02020;
+      --red: #a83a24;
 
-      --green: #2a5e35;
+      --green: #1f7a63;
 
-      --text: #1a3d24;
+      --text: #1c1a17;
 
-      --muted: #5a7560;
+      --muted: #5b564c;
 
-      --wolf-color: #b8860b;
+      --wolf-color: #7a5e15;
 
-      --partner-color: #2a5e35;
+      --partner-color: #1f7a63;
 
-      --opponent-color: #7a9a80;
+      --opponent-color: #8a8478;
 
     }
 
@@ -905,33 +907,33 @@
 
     .tee-card.is-wolf { background: #fdf8e8; border-color: var(--gold); border-width: 2px; }
 
-    .tee-card.is-partner { background: #e4f2e6; border-color: var(--partner-color); border-width: 2px; }
+    .tee-card.is-partner { background: #e1f0ec; border-color: var(--partner-color); border-width: 2px; }
 
-    .tee-card.is-solo { background: #fdecea; border-color: var(--red); border-width: 2px; }
+    .tee-card.is-solo { background: #fbe9e3; border-color: var(--red); border-width: 2px; }
 
-    .role-wolf { background: #fdf3d0; color: #7a5208; border-color: var(--gold); }
+    .role-wolf { background: #fdf3d0; color: #7a5e15; border-color: var(--gold); }
 
-    .role-partner { background: #d4f0da; color: #1a3d24; border-color: #2a5e35; }
+    .role-partner { background: #d3ece7; color: #12483d; border-color: #1f7a63; }
 
-    .carryover-badge { background: #fdf0d0; color: #7a5010; }
+    .carryover-badge { background: #fdf0d0; color: #7a5e15; }
 
-    .hole-points-badge { background: #fdf3d0; color: #7a5208; }
+    .hole-points-badge { background: #fdf3d0; color: #7a5e15; }
 
-    .result-banner.wolf-wins { background: #e4f2e6; border-color: var(--green); }
+    .result-banner.wolf-wins { background: #e1f0ec; border-color: var(--green); }
 
-    .result-banner.opponents-win { background: #fdecea; border-color: var(--red); }
+    .result-banner.opponents-win { background: #fbe9e3; border-color: var(--red); }
 
     .result-banner.push { background: #fdf8e8; border-color: var(--gold-dim); }
 
-    .nav-bar { background: #1a3d24; border-color: #0f2518; }
+    .nav-bar { background: #1c1a17; border-color: #0f0e0c; }
 
-    .nav-item { color: #7aaa80; font-size: 10px; }
+    .nav-item { color: #a89f8e; font-size: 10px; }
 
-    .nav-item.active { color: #d4f0da; }
+    .nav-item.active { color: #f3ead0; }
 
-    .hcp-stroke-badge { background: #fdf3d0; color: #7a5208; }
+    .hcp-stroke-badge { background: #fdf3d0; color: #7a5e15; }
 
-    .positive { color: #1e6e3a; }
+    .positive { color: #1f7a63; }
 
     .negative { color: var(--red); }
 
@@ -953,9 +955,9 @@
 
     .btn:hover { border-color: var(--green); color: var(--green); }
 
-    .btn-primary { background: var(--green); color: #d4f0da; border-color: var(--green); }
+    .btn-primary { background: var(--green); color: #d3ece7; border-color: var(--green); }
 
-    .btn-primary:hover { background: #1a3d24; color: #d4f0da; border-color: #1a3d24; }
+    .btn-primary:hover { background: #12483d; color: #d3ece7; border-color: #12483d; }
 
     .btn-danger { border-color: var(--red); color: var(--red); }
 
@@ -989,13 +991,15 @@
 
     .mode-btn:hover { border-color: var(--green); color: var(--green); }
 
-    .mode-btn.active { background: var(--green); color: #d4f0da; border-color: var(--green); }
+    .mode-btn.active { background: var(--green); color: #d3ece7; border-color: var(--green); }
 
-    .player-num { background: var(--green); color: #d4f0da; }
+    .player-num { background: var(--green); color: #d3ece7; }
 
     .wolf-icon { background: var(--green); }
 
     .hole-info-label { color: var(--muted); }
+
+    .sc-wolf-cell, .sc-partner-cell { color: #12483d; background: #d3ece7; }
 
     .na { color: var(--border); }
 
