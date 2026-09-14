@@ -2473,6 +2473,8 @@ function updateSetup() {
 
     nameInput.style.flex = '1';
 
+    nameInput.style.minWidth = '0';
+
 
 
     var hcpInput = document.createElement('input');
@@ -3823,7 +3825,13 @@ function playerParHcpLabel(pidx, h) {
 
   if (hcp != null) parts.push('Hcp ' + hcp);
 
-  return '<span style="font-size:13px;font-weight:400;color:var(--muted);margin-left:6px">' + parts.join(' · ') + '</span>';
+  // A block sub-line, not an inline span — keeps it off the same line as the
+
+  // name so it never competes with Pick/Solo buttons for width and wraps
+
+  // mid-phrase on longer names.
+
+  return '<div style="font-size:13px;font-weight:400;color:var(--muted)">' + parts.join(' · ') + '</div>';
 
 }
 
@@ -3859,7 +3867,7 @@ function renderScoreInputs() {
 
     row.innerHTML = `
 
-      <div style="flex:1;font-size:18px;font-weight:500">${G.players[pidx]}${playerParHcpLabel(pidx, h)}</div>
+      <div class="tee-name">${G.players[pidx]}${playerParHcpLabel(pidx, h)}</div>
 
       ${strokeBadge}
 
@@ -6805,7 +6813,7 @@ function addTeeSet(existing) {
 
   div.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
 
-    + '<input type="text" placeholder="Tee name (e.g. Blue)" value="' + name + '" id="ts-' + id + '-name" style="flex:1">'
+    + '<input type="text" placeholder="Tee name (e.g. Blue)" value="' + name + '" id="ts-' + id + '-name" style="flex:1;min-width:0">'
 
     + '<input type="number" placeholder="Yardage" value="' + yardage + '" id="ts-' + id + '-yardage" style="width:90px;text-align:center">'
 
@@ -7121,7 +7129,7 @@ function renderSettings() {
 
     row.innerHTML = '<div class="player-num">' + (i+1) + '</div>'
 
-      + '<input type="text" placeholder="Player ' + (i+1) + '" value="' + (G.players[i]||'') + '" id="settings-player-' + i + '" style="flex:1">'
+      + '<input type="text" placeholder="Player ' + (i+1) + '" value="' + (G.players[i]||'') + '" id="settings-player-' + i + '" style="flex:1;min-width:0">'
 
       + '<input type="number" min="0" max="36" placeholder="HCP" value="' + (G.handicaps[i]||0) + '" id="settings-hcp-' + i + '" style="width:70px;text-align:center;flex-shrink:0">';
 
