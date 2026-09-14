@@ -1277,11 +1277,15 @@
 
         <div style="flex:1;display:flex;gap:6px">
 
-          <select id="cfg-course-select" onchange="onCourseSelect()" style="flex:1;min-width:0">
+          <div style="flex:1;min-width:0">
 
-            <option value="">— Select course —</option>
+            <select id="cfg-course-select" onchange="onCourseSelect()" style="width:100%">
 
-          </select>
+              <option value="">— Select course —</option>
+
+            </select>
+
+          </div>
 
           <button class="btn btn-sm" onclick="_courseLibraryReturnScreen='screen-setup';showScreen('screen-courses');renderCourseLibrary()" title="Manage courses" style="padding:8px 10px;flex-shrink:0">⚙</button>
 
@@ -1293,11 +1297,15 @@
 
         <label class="text-sm" style="min-width:100px;color:var(--muted)">Tee</label>
 
-        <select id="cfg-tee-select" onchange="onTeeSelect()" style="flex:1;min-width:0">
+        <div style="flex:1;min-width:0">
 
-          <option value="">— pick course first —</option>
+          <select id="cfg-tee-select" onchange="onTeeSelect()" style="width:100%">
 
-        </select>
+            <option value="">— pick course first —</option>
+
+          </select>
+
+        </div>
 
       </div>
 
@@ -1963,11 +1971,15 @@
 
           <label class="text-sm" style="min-width:100px;color:var(--muted)">Load Course</label>
 
-          <select id="settings-course-select" onchange="onSettingsCourseSelect()" style="flex:1;min-width:0">
+          <div style="flex:1;min-width:0">
 
-            <option value="">— Select from library —</option>
+            <select id="settings-course-select" onchange="onSettingsCourseSelect()" style="width:100%">
 
-          </select>
+              <option value="">— Select from library —</option>
+
+            </select>
+
+          </div>
 
         </div>
 
@@ -2003,11 +2015,15 @@
 
           <label class="text-sm" style="min-width:100px;color:var(--muted)">Tee</label>
 
-          <select id="settings-tee-select" onchange="onSettingsTeeSelect()" style="flex:1;min-width:0">
+          <div style="flex:1;min-width:0">
 
-            <option value="">— Select tee —</option>
+            <select id="settings-tee-select" onchange="onSettingsTeeSelect()" style="width:100%">
 
-          </select>
+              <option value="">— Select tee —</option>
+
+            </select>
+
+          </div>
 
         </div>
 
@@ -2519,13 +2535,19 @@ function updateSetup() {
 
 
 
+    var teeSelectWrap = document.createElement('div');
+
+    teeSelectWrap.style.cssText = 'flex:1;min-width:0';
+
+
+
     var teeSelect = document.createElement('select');
 
     teeSelect.className = 'player-tee-select';
 
     teeSelect.id = 'cfg-player-tee-' + i;
 
-    teeSelect.style.cssText = 'flex:1;min-width:0;font-size:18px;padding:4px 6px';
+    teeSelect.style.cssText = 'width:100%;font-size:18px;padding:4px 6px';
 
     teeSelect.title = "This player's tee (defaults to the Round Info tee)";
 
@@ -2535,11 +2557,13 @@ function updateSetup() {
 
     teeSelect.onchange = function() { this.dataset.custom = '1'; };
 
+    teeSelectWrap.appendChild(teeSelect);
+
 
 
     teeWrap.appendChild(teeLabel);
 
-    teeWrap.appendChild(teeSelect);
+    teeWrap.appendChild(teeSelectWrap);
 
     row.appendChild(teeWrap);
 
