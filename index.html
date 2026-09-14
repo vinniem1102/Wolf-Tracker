@@ -155,7 +155,7 @@
 
   /* Inputs */
 
-  input[type=text], input[type=number], select {
+  input[type=text], input[type=number], input[type=tel], input[type=date], select {
 
     background: var(--surface2);
 
@@ -1277,7 +1277,7 @@
 
         <div style="flex:1;display:flex;gap:6px">
 
-          <select id="cfg-course-select" onchange="onCourseSelect()" style="flex:1">
+          <select id="cfg-course-select" onchange="onCourseSelect()" style="flex:1;min-width:0">
 
             <option value="">— Select course —</option>
 
@@ -1293,7 +1293,7 @@
 
         <label class="text-sm" style="min-width:100px;color:var(--muted)">Tee</label>
 
-        <select id="cfg-tee-select" onchange="onTeeSelect()" style="flex:1">
+        <select id="cfg-tee-select" onchange="onTeeSelect()" style="flex:1;min-width:0">
 
           <option value="">— pick course first —</option>
 
@@ -1963,7 +1963,7 @@
 
           <label class="text-sm" style="min-width:100px;color:var(--muted)">Load Course</label>
 
-          <select id="settings-course-select" onchange="onSettingsCourseSelect()" style="flex:1">
+          <select id="settings-course-select" onchange="onSettingsCourseSelect()" style="flex:1;min-width:0">
 
             <option value="">— Select from library —</option>
 
@@ -2003,7 +2003,7 @@
 
           <label class="text-sm" style="min-width:100px;color:var(--muted)">Tee</label>
 
-          <select id="settings-tee-select" onchange="onSettingsTeeSelect()" style="flex:1">
+          <select id="settings-tee-select" onchange="onSettingsTeeSelect()" style="flex:1;min-width:0">
 
             <option value="">— Select tee —</option>
 
@@ -2525,7 +2525,7 @@ function updateSetup() {
 
     teeSelect.id = 'cfg-player-tee-' + i;
 
-    teeSelect.style.cssText = 'flex:1;font-size:16px;padding:4px 6px';
+    teeSelect.style.cssText = 'flex:1;min-width:0;font-size:16px;padding:4px 6px';
 
     teeSelect.title = "This player's tee (defaults to the Round Info tee)";
 
