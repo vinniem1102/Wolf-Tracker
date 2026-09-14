@@ -3053,6 +3053,8 @@ function renderHole() {
 
   };
 
+  clearLoneWolfHighlight();
+
 
 
   // Header
@@ -3359,13 +3361,7 @@ function togglePick(pidx) {
 
         holeState.mode = null;
 
-        document.getElementById('btn-lone-tee').style.borderColor = 'var(--border)';
-
-        document.getElementById('btn-lone-tee').style.color = '';
-
-        document.getElementById('btn-lone-all').style.borderColor = 'var(--border)';
-
-        document.getElementById('btn-lone-all').style.color = '';
+        clearLoneWolfHighlight();
 
       }
 
@@ -3401,19 +3397,41 @@ function toggleSolo(pidx) {
 
     holeState.mode = 'solo';
 
-    // Clear lone wolf button highlights
-
-    document.getElementById('btn-lone-tee').style.borderColor = 'var(--border)';
-
-    document.getElementById('btn-lone-tee').style.color = '';
-
-    document.getElementById('btn-lone-all').style.borderColor = 'var(--border)';
-
-    document.getElementById('btn-lone-all').style.color = '';
+    clearLoneWolfHighlight();
 
   }
 
   renderTeeOrder();
+
+}
+
+
+
+// Shades a lone-wolf button the same way a picked player's card shades —
+
+// same background/border/text treatment as the Pick button — or clears it.
+
+function highlightLoneWolfButton(id, on) {
+
+  const btn = document.getElementById(id);
+
+  btn.style.background = on ? '#0d1a12' : 'transparent';
+
+  btn.style.borderColor = on ? '#235c38' : 'var(--border)';
+
+  btn.style.color = on ? '#3db370' : '';
+
+  btn.querySelectorAll('div').forEach(d => { d.style.color = on ? '#3db370' : ''; });
+
+}
+
+
+
+function clearLoneWolfHighlight() {
+
+  highlightLoneWolfButton('btn-lone-tee', false);
+
+  highlightLoneWolfButton('btn-lone-all', false);
 
 }
 
@@ -3425,15 +3443,9 @@ function setLoneWolf(modeKey) {
 
   holeState.mode = modeKey;
 
-  // Highlight active lone wolf button
+  highlightLoneWolfButton('btn-lone-tee', modeKey === 'loneAfterTee');
 
-  document.getElementById('btn-lone-tee').style.borderColor = modeKey==='loneAfterTee' ? 'var(--gold)' : 'var(--border)';
-
-  document.getElementById('btn-lone-tee').style.color = modeKey==='loneAfterTee' ? 'var(--gold)' : '';
-
-  document.getElementById('btn-lone-all').style.borderColor = modeKey==='loneAfterAll' ? 'var(--gold)' : 'var(--border)';
-
-  document.getElementById('btn-lone-all').style.color = modeKey==='loneAfterAll' ? 'var(--gold)' : '';
+  highlightLoneWolfButton('btn-lone-all', modeKey === 'loneAfterAll');
 
   renderTeeOrder();
 
@@ -3749,13 +3761,9 @@ function resetPicking() {
 
   document.getElementById('phase-scores').style.display = 'none';
 
-  document.getElementById('btn-lone-tee').style.borderColor = 'var(--border)';
+  highlightLoneWolfButton('btn-lone-tee', holeState.mode === 'loneAfterTee');
 
-  document.getElementById('btn-lone-tee').style.color = '';
-
-  document.getElementById('btn-lone-all').style.borderColor = 'var(--border)';
-
-  document.getElementById('btn-lone-all').style.color = '';
+  highlightLoneWolfButton('btn-lone-all', holeState.mode === 'loneAfterAll');
 
   renderTeeOrder();
 
