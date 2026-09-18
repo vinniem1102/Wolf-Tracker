@@ -3701,35 +3701,33 @@ function renderTeamSummary() {
 
     </div>
 
-    <div style="border-top:1px solid var(--border);padding-top:12px;display:flex;align-items:center;gap:12px">
+    <div style="border-top:1px solid var(--border);padding-top:12px">
 
-      <div style="flex:1">
+      <div style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:8px">Number of Doubles</div>
 
-        <div style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:4px">Number of Doubles</div>
+      <div style="display:flex;align-items:center;gap:12px">
 
-        <div style="font-size:14px;font-weight:600;color:var(--muted)">This hole only · not carried forward</div>
+        <div style="display:flex;align-items:center;gap:8px">
 
-      </div>
+          <button onclick="adjustHoleMult(-1)"
 
-      <div style="display:flex;align-items:center;gap:8px">
+            style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:23px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-sans,sans-serif)">−</button>
 
-        <button onclick="adjustHoleMult(-1)"
+          <span id="hole-mult-display" style="font-size:29px;font-weight:700;color:var(--gold);font-family:'DM Mono',monospace;min-width:28px;text-align:center">${curDoubles}</span>
 
-          style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:23px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-sans,sans-serif)">−</button>
+          <button onclick="adjustHoleMult(1)"
 
-        <span id="hole-mult-display" style="font-size:29px;font-weight:700;color:var(--gold);font-family:'DM Mono',monospace;min-width:28px;text-align:center">${curDoubles}</span>
+            style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:23px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-sans,sans-serif)">+</button>
 
-        <button onclick="adjustHoleMult(1)"
+        </div>
 
-          style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:23px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-sans,sans-serif)">+</button>
+        <div style="text-align:right;margin-left:auto">
 
-      </div>
+          <div style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Stake</div>
 
-      <div style="text-align:right;min-width:60px">
+          <div id="hole-stake-display" style="font-size:26px;font-weight:700;color:var(--gold);font-family:'DM Mono',monospace">$${effectiveStake.toFixed(0)}</div>
 
-        <div style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Stake</div>
-
-        <div id="hole-stake-display" style="font-size:26px;font-weight:700;color:var(--gold);font-family:'DM Mono',monospace">$${effectiveStake.toFixed(0)}</div>
+        </div>
 
       </div>
 
@@ -5369,35 +5367,33 @@ function renderEditTeamSummary() {
 
     <div style="display:flex;gap:16px;margin-bottom:14px">${teamBlock}</div>
 
-    <div style="border-top:1px solid var(--border);padding-top:12px;display:flex;align-items:center;gap:12px">
+    <div style="border-top:1px solid var(--border);padding-top:12px">
 
-      <div style="flex:1">
+      <div style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:8px">Number of Doubles</div>
 
-        <div style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:4px">Number of Doubles</div>
+      <div style="display:flex;align-items:center;gap:12px">
 
-        <div style="font-size:14px;font-weight:600;color:var(--muted)">This hole only · not carried forward</div>
+        <div style="display:flex;align-items:center;gap:8px">
 
-      </div>
+          <button onclick="adjustEditMult(-1)"
 
-      <div style="display:flex;align-items:center;gap:8px">
+            style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:23px;cursor:pointer;font-family:var(--font-sans,sans-serif)">−</button>
 
-        <button onclick="adjustEditMult(-1)"
+          <span id="edit-mult-display" style="font-size:29px;font-weight:700;color:var(--gold);font-family:'DM Mono',monospace;min-width:28px;text-align:center">${doubles}</span>
 
-          style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:23px;cursor:pointer;font-family:var(--font-sans,sans-serif)">−</button>
+          <button onclick="adjustEditMult(1)"
 
-        <span id="edit-mult-display" style="font-size:29px;font-weight:700;color:var(--gold);font-family:'DM Mono',monospace;min-width:28px;text-align:center">${doubles}</span>
+            style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:23px;cursor:pointer;font-family:var(--font-sans,sans-serif)">+</button>
 
-        <button onclick="adjustEditMult(1)"
+        </div>
 
-          style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:23px;cursor:pointer;font-family:var(--font-sans,sans-serif)">+</button>
+        <div style="text-align:right;margin-left:auto">
 
-      </div>
+          <div style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Stake</div>
 
-      <div style="text-align:right;min-width:60px">
+          <div id="edit-stake-display" style="font-size:26px;font-weight:700;color:var(--gold);font-family:'DM Mono',monospace">$${stake.toFixed(0)}</div>
 
-        <div style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Stake</div>
-
-        <div id="edit-stake-display" style="font-size:26px;font-weight:700;color:var(--gold);font-family:'DM Mono',monospace">$${stake.toFixed(0)}</div>
+        </div>
 
       </div>
 
