@@ -2405,7 +2405,9 @@ function updateSetup() {
 
   const startHoleVal = parseInt(document.getElementById('cfg-start-hole')?.value) || 1;
 
-  const wolfHoleBySeq = ((startHoleVal - 1 + 16) % 18) + 1;
+  // wolfHole is a position in the play sequence (e.g. the 17th hole played),
+  // not an absolute hole number, so it doesn't depend on the starting hole.
+  const wolfHoleBySeq = DEFAULT_WOLF_HOLE[n] || 17;
 
 
 
@@ -4507,7 +4509,9 @@ function renderScoreboard() {
 
     const dsign = d > 0 ? '+' : '';
 
-    const isWolf = !G.gameOver && i === ((h-1) % n) && h <= G.wolfHole;
+    const _pi = holePlayIndex(h);
+
+    const isWolf = !G.gameOver && i === (_pi % n) && (_pi + 1) < G.wolfHole;
 
     tbody.innerHTML += `<tr>
 
@@ -7365,11 +7369,10 @@ function saveSettings() {
 
       G.currentHole  = newStart;
 
-      // Auto-update wolf hole to 17th in new sequence if not manually changed
+      // wolfHole is a play-sequence position, so changing the starting hole
+      // doesn't move it — keep whatever value is entered.
 
-      const autoWolfHole = ((newStart - 1 + 16) % 18) + 1;
-
-      G.wolfHole = parseInt(document.getElementById('settings-wolf-hole').value) || autoWolfHole;
+      G.wolfHole = parseInt(document.getElementById('settings-wolf-hole').value) || DEFAULT_WOLF_HOLE[G.numPlayers] || 17;
 
     }
 
@@ -8547,11 +8550,11 @@ testStorage();
 
     }
 
-    // Update wolf hole default to 17th hole played
-
+    // Wolf-hole threshold is a play-sequence position, independent of the
+    // starting hole — re-apply the player-count default.
     const wolfHoleEl = document.getElementById('cfg-wolf-hole');
 
-    if (wolfHoleEl) wolfHoleEl.value = ((h - 1 + 16) % 18) + 1;
+    if (wolfHoleEl) wolfHoleEl.value = DEFAULT_WOLF_HOLE[parseInt(document.getElementById('num-players').value) || 4] || 17;
 
   });
 
