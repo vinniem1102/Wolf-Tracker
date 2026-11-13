@@ -1431,7 +1431,7 @@
 
         <tr>
 
-          <td class="label-cell">Wolf Hole Begins</td>
+          <td class="label-cell">Wolf Hole Number</td>
 
           <td><input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="2" id="cfg-wolf-hole" value="17" style="width:70px;text-align:center"></td>
 
@@ -2057,7 +2057,7 @@
 
         <tr>
 
-          <td class="label-cell">Wolf Hole Begins</td>
+          <td class="label-cell">Wolf Hole Number</td>
 
           <td><input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="2" id="settings-wolf-hole" style="width:70px;text-align:center"></td>
 
@@ -2417,7 +2417,7 @@ function updateSetup() {
 
   const pbEl = document.getElementById('cfg-pts-back');
 
-  if (whEl) whEl.value = wolfHoleBySeq;
+  if (whEl) whEl.value = wolfSeqToHole(wolfHoleBySeq, startHoleVal);
 
   if (pfEl) pfEl.value = pfDefault;
 
@@ -2863,7 +2863,12 @@ function startGame() {
 
   G.multipliers = JSON.parse(JSON.stringify(MULTIPLIERS)); // snapshot at game start
 
-  G.wolfHole = parseInt(document.getElementById('cfg-wolf-hole').value);
+  {
+    // The field holds the actual course hole number; store the play-sequence position.
+    const _start = Math.max(1, Math.min(18, parseInt(document.getElementById('cfg-start-hole')?.value) || 1));
+    const _wh = parseInt(document.getElementById('cfg-wolf-hole').value);
+    G.wolfHole = isNaN(_wh) ? (DEFAULT_WOLF_HOLE[n] || 17) : wolfHoleToSeq(_wh, _start);
+  }
 
   G.ptsFront = parseInt(document.getElementById('cfg-pts-front').value);
 
@@ -2964,6 +2969,19 @@ function holePlayIndex(holeNum) {
 }
 
 
+
+// G.wolfHole is stored as a play-sequence position (Nth hole played). The UI
+// shows/enters it as the actual hole number on the course, so convert both ways.
+function wolfSeqToHole(seq, start) {
+  start = start || 1;
+  return ((start - 1 + (seq - 1)) % 18) + 1;
+}
+
+function wolfHoleToSeq(hole, start) {
+  start = start || 1;
+  hole = Math.max(1, Math.min(18, hole));
+  return ((hole - start + 18) % 18) + 1;
+}
 
 // Returns hole number at 0-based play sequence index
 
@@ -7301,7 +7319,7 @@ function renderSettings() {
 
   // Point values
 
-  document.getElementById('settings-wolf-hole').value = G.wolfHole || 17;
+  document.getElementById('settings-wolf-hole').value = wolfSeqToHole(G.wolfHole || 17, G.startingHole);
 
 
 
@@ -7317,8 +7335,8 @@ function renderSettings() {
 
       const wolfEl = document.getElementById('settings-wolf-hole');
 
-      // wolfHole is a play-sequence position (Nth hole played), not an absolute hole number
-      if (wolfEl) wolfEl.value = DEFAULT_WOLF_HOLE[G.numPlayers] || 17;
+      // Default Wolf Hole Number (actual hole) for the new starting hole
+      if (wolfEl) wolfEl.value = wolfSeqToHole(DEFAULT_WOLF_HOLE[G.numPlayers] || 17, h);
 
     };
 
@@ -7498,10 +7516,8 @@ function saveSettings() {
 
       G.currentHole  = newStart;
 
-      // wolfHole is a play-sequence position, so changing the starting hole
-      // doesn't move it — keep whatever value is entered.
-
-      G.wolfHole = parseInt(document.getElementById('settings-wolf-hole').value) || DEFAULT_WOLF_HOLE[G.numPlayers] || 17;
+      // The Wolf Hole Number field is an actual hole number; it's converted to a
+      // play-sequence position below using the new starting hole.
 
     }
 
@@ -7531,7 +7547,8 @@ function saveSettings() {
 
   // Point values
 
-  const newWolfHole = parseInt(document.getElementById('settings-wolf-hole').value) || G.wolfHole;
+  const _whInput = parseInt(document.getElementById('settings-wolf-hole').value);
+  const newWolfHole = isNaN(_whInput) ? G.wolfHole : wolfHoleToSeq(_whInput, G.startingHole);
 
   const newPtsFront = parseInt(document.getElementById('settings-pts-front').value) || G.ptsFront;
 
@@ -8679,11 +8696,11 @@ testStorage();
 
     }
 
-    // Wolf-hole threshold is a play-sequence position, independent of the
-    // starting hole — re-apply the player-count default.
+    // Re-apply the player-count default, shown as the actual hole number
+    // for this starting hole.
     const wolfHoleEl = document.getElementById('cfg-wolf-hole');
 
-    if (wolfHoleEl) wolfHoleEl.value = DEFAULT_WOLF_HOLE[parseInt(document.getElementById('num-players').value) || 4] || 17;
+    if (wolfHoleEl) wolfHoleEl.value = wolfSeqToHole(DEFAULT_WOLF_HOLE[parseInt(document.getElementById('num-players').value) || 4] || 17, h);
 
   });
 
