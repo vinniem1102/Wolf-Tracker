@@ -8692,7 +8692,9 @@ testStorage();
 
       const mid  = ((h - 1 + 8) % 18) + 1;
 
-      note.textContent = 'Plays ' + h + ' → ' + mid + ' → ' + last;
+      // e.g. start 12: "Plays 12 → 18, then 1 → 11 (first 9 end at hole 2)"
+      note.textContent = 'Plays ' + h + ' → 18, then 1 → ' + last +
+        (mid === 18 ? '' : ' (first 9 end at hole ' + mid + ')');
 
     }
 
