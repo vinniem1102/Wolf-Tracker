@@ -7317,7 +7317,8 @@ function renderSettings() {
 
       const wolfEl = document.getElementById('settings-wolf-hole');
 
-      if (wolfEl) wolfEl.value = ((h - 1 + 16) % 18) + 1;
+      // wolfHole is a play-sequence position (Nth hole played), not an absolute hole number
+      if (wolfEl) wolfEl.value = DEFAULT_WOLF_HOLE[G.numPlayers] || 17;
 
     };
 
