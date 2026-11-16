@@ -1571,13 +1571,13 @@
 
   <div id="wolf-hole-entry" style="display:none">
 
-    <div class="section-label">This hole's point value <span class="chip">Wolf hole — enter manually</span></div>
+    <div class="section-label"><span class="chip">Wolf hole – update manually</span></div>
 
     <div class="card">
 
       <div class="row">
 
-        <label class="text-sm" style="min-width:140px">Base points this hole</label>
+        <label class="text-sm" style="min-width:140px">Points this hole</label>
 
         <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="3" id="wolf-hole-pts-input" value="8"
 
@@ -3047,13 +3047,17 @@ function renderHole() {
 
 
 
+  // Default Wolf-hole points: half of what the wolf owes (rounded up); 8 if the wolf owes nothing
+  const _wolfOwes = Math.max(0, -(G.points[wolfIdx] || 0));
+  const wolfDefaultPts = _wolfOwes > 0 ? Math.ceil(_wolfOwes / 2) : 8;
+
   // Base points — wolf holes use ONLY the manually entered value
 
   let basePts;
 
   if (isWolfHole) {
 
-    basePts = holeState.wolfHolePts || 8;
+    basePts = wolfDefaultPts;
 
     // Wolf hole manual entry is the sole source — ignore front/back pts
 
@@ -3087,7 +3091,7 @@ function renderHole() {
 
     isWolfHole,
 
-    wolfHolePts: isWolfHole ? (holeState.wolfHolePts||8) : null,
+    wolfHolePts: isWolfHole ? wolfDefaultPts : null,
 
     scores: new Array(n).fill(null),
 
@@ -3139,7 +3143,7 @@ function renderHole() {
 
     wolfHoleEntry.style.display = 'block';
 
-    document.getElementById('wolf-hole-pts-input').value = holeState.wolfHolePts || 8;
+    document.getElementById('wolf-hole-pts-input').value = holeState.wolfHolePts;
 
   } else {
 
