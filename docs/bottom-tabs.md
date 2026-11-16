@@ -1,5 +1,7 @@
 # Bottom Tabs
 
+> Setup screen: see [Starting Screen](setup-screen.md).
+
 Once a round has been started (or resumed from the banner on the Setup screen), a six-button bar appears at the bottom of the app. It is hidden on the Setup screen and comes back after **Start Round** or **Resume**.
 
 | Tab | Icon | Screen | Purpose |
