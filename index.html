@@ -1327,7 +1327,7 @@
 
   <div id="cfg-hcp-section" style="display:none">
 
-    <div class="section-label">Hole Handicap Ratings <span class="chip">1 = hardest</span></div>
+    <div class="section-label">Hole Handicap Ratings</div>
 
     <div class="card">
 
@@ -1343,7 +1343,7 @@
 
         <button class="btn btn-sm" onclick="toggleHcpSection(false)">Hide Ratings</button>
 
-        <button class="btn btn-sm" onclick="clearHcpRatings()">Clear</button>
+        <button class="btn btn-sm" id="hcp-clear-btn" onclick="clearHcpRatings()">Clear</button>
 
       </div>
 
@@ -6779,9 +6779,13 @@ function onTeeSelect() {
 
     const el = document.getElementById('hcp-hole-' + h);
 
-    if (el) el.value = tee.ratings[h-1] || h;
+    if (el) el.value = (tee.ratings && tee.ratings[h-1]) || h;
 
   }
+
+  // Ratings that come from the Course Library are read-only here (fix them by
+  // editing the course). A tee saved without ratings stays editable so they can be entered.
+  setHcpRatingsLocked(!!(tee.ratings && tee.ratings.length === 18));
 
   toggleHcpSection(true);
 
@@ -6831,7 +6835,27 @@ function toggleHcpSection(show) {
 
 
 
+function setHcpRatingsLocked(locked) {
+
+  for (let h = 1; h <= 18; h++) {
+
+    const el = document.getElementById('hcp-hole-' + h);
+
+    if (el) { el.readOnly = locked; el.style.opacity = locked ? '0.7' : ''; }
+
+  }
+
+  const clr = document.getElementById('hcp-clear-btn');
+
+  if (clr) clr.style.display = locked ? 'none' : '';
+
+}
+
+
+
 function clearHcpRatings() {
+
+  if (document.getElementById('hcp-hole-1')?.readOnly) return;
 
   for (let h = 1; h <= 18; h++) {
 

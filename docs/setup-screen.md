@@ -26,7 +26,7 @@ Sections, top to bottom:
 |-------|--------------|
 | **Course** | Pick from the courses in your library. **Required** to start. |
 | **⚙** (next to Course) | Opens the **Courses** library so you can search for a course, add one manually, or edit/delete saved ones. **← Back** returns here with the list refreshed. |
-| **Tee** | The tee set used for the round, listed with its yardage, for example *Blue (6,420 yds)*. **Required** to start. Available once a course is chosen. |
+| **Tee** | The tee set used for the round, listed with its yardage, for example *Blue (6,420 yds)*. **Required** to start. Available once a course is chosen. If you have players playing different tees select the tee set used by the majority and update the individuals playing different tees below the players name. |
 | **Date** | Defaults to today. It appears on the Scoreboard, Scorecard and History. |
 
 Choosing a tee loads that tee's hole handicap ratings and pars (next section) and sets the default tee for every player.
@@ -35,11 +35,12 @@ Choosing a tee loads that tee's hole handicap ratings and pars (next section) an
 
 ## 2. Hole Handicap Ratings
 
-Appears after a course **and** tee are selected. The chip says **1 = hardest**.
+Appears after a course **and** tee are selected. A rating of 1 is the hardest hole.
 
-- A grid of **H1–H18**, split into **Front 9** and **Back 9**, shows each hole's handicap rating (stroke index). They are filled in from the selected tee and can be edited by hand.
+- A grid of **H1–H18**, split into **Front 9** and **Back 9**, shows each hole's handicap rating (stroke index), filled in from the selected tee.
+- **The ratings are read-only here.** They come from the Course Library, so to correct one, edit the course on the **Courses** screen (the ⚙ button next to Course). The values shown are greyed slightly to indicate this.
+- Exception: if a saved tee has no hole ratings at all, the grid starts as 1–18 and stays editable so you can enter them for this round. The **Clear** button, which resets every hole to its own number, appears only in this case.
 - **Hide Ratings** collapses the section (the values are still used).
-- **Clear** resets every hole to its own number (H1 = 1, H2 = 2 … H18 = 18). This is a plain default, not a blank, so it is a reasonable choice if the course's ratings are unknown.
 
 **How handicaps become strokes**
 - The app uses the **difference from the lowest handicap in the group**. The lowest-handicap player plays scratch, and everyone else receives strokes equal to their handicap minus that player's.
@@ -103,9 +104,17 @@ A **Setting / Value** table. Values are set automatically from the number of pla
 
 | Setting | Meaning | Defaults (4 / 5 / 6 / 7 players) |
 |---------|---------|----------------------------------|
-| **Wolf Hole Number** | The **actual hole on the course** where the "Lowest Player Wolf" holes begin. From that hole through the end of the round, the Wolf is whoever has the fewest points. | 4 players: the 17th hole played. 5, 6, 7 players: the 16th hole played. For a start on hole 1 that is hole 17 / 16 / 16 / 16. For a start on hole 12 with 5 players it shows hole 9. |
-| **Points Holes Played 1-8** | Base points per hole for the first eight holes played. | 2 / 3 / 2 / 3 |
-| **Points Holes Played 9-Wolf Hole** | Base points per hole from the 9th hole played up to the hole before the Wolf holes begin. | 4 / 3 / 4 / 3 |
+| **Wolf Hole Number** | The **actual hole on the course** where the "Lowest Player Wolf" holes begin. From that hole through the end of the round, the Wolf is whoever has the fewest points. | 
+The defaults for a start on hole 1 are 
+	4 players: the 17th hole played. 
+	5, 6, 7 players: the 16th hole played. 
+For a start on hole 12 with 5 players it shows hole 9. |
+
+| **Points Holes Played 1-8** | Base points per hole for the first eight holes played. 
+	Defaults: 4 Players 2 / 5 Players 3 / 6 Players 2 / 7 Players 3 |
+| **Points Holes Played 9-Wolf Hole** | Base points per hole from the 9th hole played up to the hole before the Wolf holes begin. 
+Defaults: 4 Players 4 / 5 Players 3 / 6 Players 4 / 7 Players 3 |
+Note: the above Holes Played 1-8/9-Wolf Hole are configurable and can be updated to whatever a user wants.
 
 Notes:
 - Both point settings count holes **in play order**, not course hole numbers.
@@ -123,9 +132,9 @@ A **Decision × group size** grid. The stake for a hole is the hole's base point
 |----------|----|----|----|----|
 | Lone Wolf (after tee) | 3 | 4 | 4 | 5 |
 | Lone Wolf (after all) | 2 | 3 | 3 | 4 |
-| Picks 1 | 1 | 2 | 2 | 3 |
-| Picks 2 | — | 1 | 1 | 2 |
-| Picks 3 | — | — | — | 1 |
+| Picks 1 		| 1 | 2 | 2 | 3 |
+| Picks 2 		| — | 1 | 1 | 2 |
+| Picks 3 		| — | — | — | 1 |
 
 - Boxes are editable. Enter a whole number of 1 or more. A blank or invalid entry is treated as no value.
 - A dash (—) means the decision isn't available for that group size, so it can't be edited.
