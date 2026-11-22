@@ -4373,6 +4373,14 @@ function showHoleResult(type, msg, deltas, wolfTeam, opponents, totalPts, mult) 
 
   const showHcp = G.hasHandicaps;
 
+  // Read the hole from its committed log entry so this card also shows the
+  // right scores/roles after the hole is edited.
+  const entry = G.scores.find(s => s.hole === holeState.hole) || null;
+  const grossArr = entry ? entry.grossScores : holeState.scores;
+  const wolfI = entry ? entry.wolfIdx : holeState.wolfIdx;
+  const partnerArr = entry ? entry.partnerIdxs : holeState.partnerIdxs;
+  const soloI = entry ? entry.soloIdx : holeState.soloIdx;
+
 
 
   let deltaRows = '';
@@ -4401,7 +4409,7 @@ function showHoleResult(type, msg, deltas, wolfTeam, opponents, totalPts, mult) 
 
     const total = G.points[i];
 
-    const gross = holeState.scores[i];
+    const gross = grossArr[i];
 
     const strokes = strokesOnHole(i, holeState.hole);
 
@@ -4415,11 +4423,11 @@ function showHoleResult(type, msg, deltas, wolfTeam, opponents, totalPts, mult) 
 
     const tcls = total > 0 ? 'color:#27ae60' : total < 0 ? 'color:#c0392b' : 'color:var(--muted)';
 
-    const isWolf = i === holeState.wolfIdx;
+    const isWolf = i === wolfI;
 
-    const isPartner = holeState.partnerIdxs.includes(i);
+    const isPartner = partnerArr.includes(i);
 
-    const isSoloP = holeState.soloIdx === i;
+    const isSoloP = soloI === i;
 
     const nameColor = isSoloP ? 'color:#e74c3c' : isWolf ? 'color:var(--gold)' : isPartner ? 'color:#3db370' : 'color:var(--text)';
 
@@ -4461,7 +4469,9 @@ function showHoleResult(type, msg, deltas, wolfTeam, opponents, totalPts, mult) 
 
     + '</div>'
 
-    + '<div class="card" style="padding:1rem 1.25rem">' + deltaRows + '</div>';
+    + '<div class="card" style="padding:1rem 1.25rem">' + deltaRows + '</div>'
+
+    + '<button class="btn btn-full" style="margin-top:10px" onclick="editCurrentHole()">✎ Edit Hole</button>';
 
 
 
@@ -4496,6 +4506,16 @@ function showHoleResult(type, msg, deltas, wolfTeam, opponents, totalPts, mult) 
 }
 
 
+
+// The hole is complete as soon as Calculate Result is tapped, so it can be
+// edited right away from the result card (returns to the Hole screen when saved).
+function editCurrentHole() {
+  let si = -1;
+  G.scores.forEach((s, i) => { if (s.hole === G.currentHole) si = i; });
+  if (si < 0) return;
+  startEditHole(si);
+  _editFromHole = true;
+}
 
 function nextHole() {
 
@@ -4607,15 +4627,8 @@ function renderScoreboard() {
 
       const isWolfHole = (holePlayIndex(s.hole) + 1) >= G.wolfHole;
 
-      // Disable edit on current hole — must click Next Hole first
-
-      const isCurrentHole = s.hole === G.currentHole && !G.gameOver;
-
-      const editBtn = isCurrentHole
-
-        ? `<button class="btn btn-sm" disabled style="font-size:14px;padding:3px 10px;opacity:0.35;cursor:not-allowed">Edit</button>`
-
-        : `<button class="btn btn-sm" onclick="startEditHole(${si})" style="font-size:14px;padding:3px 10px">Edit</button>`;
+      // A hole is complete (and editable) as soon as Calculate Result is tapped
+      const editBtn = `<button class="btn btn-sm" onclick="startEditHole(${si})" style="font-size:14px;padding:3px 10px">Edit</button>`;
 
       const multBadge = (s.holeDoubles && s.holeDoubles > 0)
 
@@ -5927,17 +5940,24 @@ function recalculateEditPreview(si) {
 
 
 
+// True when the open Edit Hole overlay was launched from the Hole screen's result card
+let _editFromHole = false;
+
 function closeEditOverlay() {
 
   const el = document.getElementById('edit-overlay');
 
   if (el) el.remove();
 
+  _editFromHole = false;
+
 }
 
 
 
 function saveEditHole(si) {
+
+  const fromHole = _editFromHole;
 
   const n = G.numPlayers;
 
@@ -6033,7 +6053,17 @@ function saveEditHole(si) {
 
   }
 
-  showScreen('screen-scores');
+  if (fromHole && !G.gameOver) {
+
+    showScreen('screen-hole');
+
+    window.scrollTo(0, 0);
+
+  } else {
+
+    showScreen('screen-scores');
+
+  }
 
 }
 

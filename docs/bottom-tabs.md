@@ -45,6 +45,7 @@ The working screen for the hole currently being played. The header shows **Hole 
 
 **Result**
 - Shows who won, the stake, and each player's gain or loss.
+- **✎ Edit Hole** (under the result) reopens the hole you just calculated to fix scores, the Wolf decision or partners, doubles or stake. **Recalculate Preview**, then **Save & Return**, updates the result and returns here. Nothing else changes, so you can still tap **Next Hole**.
 - **Next Hole** moves on in play order. On the last hole of the round the button becomes **🏁 View Final Scores**.
 
 ---
@@ -53,7 +54,7 @@ The working screen for the hole currently being played. The header shows **Hole 
 
 - **Running Totals** – every player sorted from most to fewest points, with **Points** and **This Hole** (the change from the last hole). A dot marks the player who is Wolf on the current hole, until the Wolf holes begin.
 - **Hole-by-Hole Log** – one row per hole played: result (Wolf wins / Opponents win / Solo / Push), the Wolf, the decision, the stake and any doubles. Wolf holes are labelled **Wolf hole**.
-  - **Edit** on a row reopens that hole to change the scores, the Wolf decision or partners, the doubles, the stake and (on Wolf holes) **Points this hole**. **Recalculate Preview** shows the new result, then **Save & Return** applies it and recalculates every later hole. Edit is disabled for the hole currently in progress; finish it with **Next Hole** first.
+  - **Edit** on a row reopens that hole to change the scores, the Wolf decision or partners, the doubles, the stake and (on Wolf holes) **Points this hole**. **Recalculate Preview** shows the new result, then **Save & Return** applies it and recalculates every later hole. A hole counts as complete as soon as **Calculate Result** is tapped, so it can be edited right away, including the hole you just played.
 - **Back to Current Hole** returns to the Hole tab.
 - After **View Final Scores**:
   - a **Final Ledger** shows who pays whom,
