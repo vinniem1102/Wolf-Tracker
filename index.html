@@ -4305,8 +4305,6 @@ function calculateHole() {
 
   G.lastHoleDeltas = deltas;
 
-  saveGame();
-
 
 
   // Log
@@ -4340,6 +4338,10 @@ function calculateHole() {
     deltas: [...deltas],
 
   });
+
+  // Save only now that the hole is in the log, so the saved round never has
+  // updated points without the hole record (which broke resuming).
+  saveGame();
 
 
 
@@ -4524,6 +4526,8 @@ function nextHole() {
   if (G.currentHole === lastHole) return;
 
   G.currentHole = holeAtIndex(holePlayIndex(G.currentHole) + 1);
+
+  saveGame(); // remember which hole we're on, so Resume opens the right one
 
   holeState = {};
 
@@ -7742,6 +7746,24 @@ function resumeGame() {
 
   document.getElementById('main-nav').style.display = 'flex';
 
+  // Repair: running totals must equal the sum of the logged holes. Rounds saved by
+  // older versions could hold points for a hole that was never logged.
+  if (G.scores && !G.gameOver) {
+
+    const n = G.numPlayers;
+
+    const pts = new Array(n).fill(0);
+
+    G.scores.forEach(s => s.deltas.forEach((d, i) => pts[i] += d));
+
+    G.points = pts;
+
+    G.carryover = G.scores.length ? (G.scores[G.scores.length-1].carryover || 0) : 0;
+
+    G.lastHoleDeltas = G.scores.length ? [...G.scores[G.scores.length-1].deltas] : new Array(n).fill(0);
+
+  }
+
   if (G.gameOver) {
 
     showScreen('screen-scores');
@@ -7753,6 +7775,81 @@ function resumeGame() {
     showScreen('screen-hole');
 
     renderHole();
+
+    // The current hole was already calculated before the app closed: reopen it
+    // on its result card (with Edit Hole / Next Hole) instead of as a fresh hole.
+
+    let done = null;
+
+    G.scores.forEach(s => { if (s.hole === G.currentHole) done = s; });
+
+    if (done) restoreCompletedHole(done);
+
+  }
+
+}
+
+function restoreCompletedHole(entry) {
+
+  const idx = G.scores.indexOf(entry);
+
+  const carryIn = idx > 0 ? (G.scores[idx-1].carryover || 0) : 0;
+
+  const isWolfHole = (holePlayIndex(entry.hole) + 1) >= G.wolfHole;
+
+  holeState = {
+
+    hole: entry.hole,
+
+    wolfIdx: entry.wolfIdx,
+
+    teeOrder: [],
+
+    partnerIdxs: [...entry.partnerIdxs],
+
+    mode: entry.mode,
+
+    soloIdx: entry.soloIdx,
+
+    basePts: entry.basePts,
+
+    isWolfHole,
+
+    wolfHolePts: isWolfHole ? entry.basePts : null,
+
+    scores: [...entry.grossScores],
+
+    resultShown: true,
+
+    holeDoubles: entry.holeDoubles || 0,
+
+    stakeOverride: entry.stakeOverride != null ? entry.stakeOverride : null,
+
+  };
+
+  document.getElementById('phase-pick').style.display = 'none';
+
+  document.getElementById('phase-scores').style.display = 'none';
+
+  document.getElementById('wolf-hole-entry').style.display = 'none';
+
+  refreshHoleScreenAfterEdit();
+
+  // Banner: points this hole were played for (base + carry that came in)
+
+  document.getElementById('hole-pts-display').textContent = entry.basePts + (isWolfHole ? 0 : carryIn);
+
+  const coBadge = document.getElementById('carryover-badge');
+
+  if (!isWolfHole && carryIn > 0) {
+
+    coBadge.style.display = 'inline-flex';
+
+    document.getElementById('carryover-display').textContent = carryIn;
+
+  } else {
+
+    coBadge.style.display = 'none';
 
   }
 

@@ -5,7 +5,7 @@ The screen shown when the app opens and after **New Game**. It collects everythi
 At the top right, **🗂 History** opens past rounds.
 
 **Round in Progress banner** – if a round was saved on this device and not finished, a banner appears above Round Info:
-- **▶ Resume Round** – continue where you left off (goes to the Hole screen, or the Scoreboard if the round was already finished).
+- **▶ Resume Round** – continue where you left off. It opens the hole you were on; if you had already tapped Calculate Result for that hole, it reopens on the result card (with Edit Hole and Next Hole). A finished round opens on the Scoreboard.
 - **Discard & Start New** – deletes the saved round after a confirmation. This cannot be undone.
 
 Sections, top to bottom:
